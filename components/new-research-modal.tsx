@@ -24,7 +24,9 @@ import {
   Globe, 
   Upload,
   X,
-  Link
+  Link,
+  MessageSquare,
+  BookOpen
 } from 'lucide-react'
 import { Checkbox } from "@/components/ui/checkbox"
 import { TabsList, TabsTrigger, Tabs, TabsContent } from "@/components/ui/tabs"
@@ -104,6 +106,7 @@ export function NewResearchModal() {
   const [urlInput, setUrlInput] = useState('')
   const [isOpen, setIsOpen] = useState(false)
   const [selectedTypes, setSelectedTypes] = useState<DocumentType[]>([])
+  const [showTypeSelection, setShowTypeSelection] = useState(false)
 
   const handleStartResearch = () => {
     const context = {
@@ -114,8 +117,25 @@ export function NewResearchModal() {
       uploadedFiles
     }
     
-    router.push(`/chat/new?context=${encodeURIComponent(JSON.stringify(context))}`)
     setIsOpen(false)
+    setShowTypeSelection(true)
+  }
+
+  const handleTypeSelection = (type: 'chat' | 'playbook') => {
+    const context = {
+      companies,
+      specificDocuments: documents,
+      includeNews,
+      includeWebAccess,
+      uploadedFiles
+    }
+
+    setShowTypeSelection(false)
+    if (type === 'chat') {
+      router.push(`/chat/new?context=${encodeURIComponent(JSON.stringify(context))}`)
+    } else {
+      router.push(`/playbooks?context=${encodeURIComponent(JSON.stringify(context))}`)
+    }
   }
 
   const renderOptionContent = () => {
@@ -426,114 +446,154 @@ export function NewResearchModal() {
   }
 
   return (
-    <Dialog open={isOpen} onOpenChange={setIsOpen}>
-      <DialogTrigger asChild>
-        <Button 
-          size="lg"
-          className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-6 rounded-xl 
-                   shadow-md hover:shadow-xl transition-all duration-200 
-                   flex items-center gap-3 h-auto border border-gray-800
-                   hover:border-gray-700"
-        >
-          <PlusCircle className="h-5 w-5" />
-          <span className="text-base font-medium">New Research</span>
-        </Button>
-      </DialogTrigger>
-      <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
-        <DialogHeader className="space-y-1.5">
-          <DialogTitle className="text-2xl font-bold text-gray-900">
-            Define Research Context
-          </DialogTitle>
-          <DialogDescription className="text-gray-500">
-            Set the scope of your research by selecting the context options below.
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="grid grid-cols-3 gap-3 mt-4">
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-md
-                     ${selectedOption === 'companies' ? 'ring-2 ring-gray-900 bg-gray-50' : ''}`}
-            onClick={() => setSelectedOption('companies')}
+    <>
+      <Dialog open={isOpen} onOpenChange={setIsOpen}>
+        <DialogTrigger asChild>
+          <Button 
+            size="lg"
+            className="bg-gray-900 hover:bg-gray-800 text-white px-8 py-6 rounded-xl 
+                     shadow-md hover:shadow-xl transition-all duration-200 
+                     flex items-center gap-3 h-auto border border-gray-800
+                     hover:border-gray-700"
           >
-            <CardHeader className="p-4">
-              <Building2 className="w-5 h-5 text-gray-700 mb-1.5" />
-              <CardTitle className="text-base">Companies</CardTitle>
-              <CardDescription className="text-sm">Select target companies</CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-md
-                     ${selectedOption === 'documents' ? 'ring-2 ring-gray-900 bg-gray-50' : ''}`}
-            onClick={() => setSelectedOption('documents')}
-          >
-            <CardHeader>
-              <FileText className="w-6 h-6 text-gray-700 mb-2" />
-              <CardTitle className="text-lg">Documents</CardTitle>
-              <CardDescription>Add specific documents</CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-md
-                     ${includeNews ? 'bg-gray-900 text-white' : ''}`}
-            onClick={() => setIncludeNews(!includeNews)}
-          >
-            <CardHeader>
-              <Newspaper className={`w-6 h-6 mb-2 ${includeNews ? 'text-white' : 'text-gray-700'}`} />
-              <CardTitle className="text-lg">News</CardTitle>
-              <CardDescription className={includeNews ? 'text-gray-200' : ''}>
-                {includeNews ? 'News Included' : 'Include news articles'}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-md
-                     ${includeWebAccess ? 'bg-gray-900 text-white' : ''}`}
-            onClick={() => setIncludeWebAccess(!includeWebAccess)}
-          >
-            <CardHeader>
-              <Globe className={`w-6 h-6 mb-2 ${includeWebAccess ? 'text-white' : 'text-gray-700'}`} />
-              <CardTitle className="text-lg">Web Access</CardTitle>
-              <CardDescription className={includeWebAccess ? 'text-gray-200' : ''}>
-                {includeWebAccess ? 'Web Access Enabled' : 'Enable web access'}
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card 
-            className={`cursor-pointer transition-all duration-200 hover:shadow-md
-                     ${selectedOption === 'upload' ? 'ring-2 ring-gray-900 bg-gray-50' : ''}`}
-            onClick={() => setSelectedOption('upload')}
-          >
-            <CardHeader>
-              <Upload className="w-6 h-6 text-gray-700 mb-2" />
-              <CardTitle className="text-lg">Upload</CardTitle>
-              <CardDescription>Upload custom documents</CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
-
-        <div className="mt-4">
-          {renderOptionContent()}
-        </div>
-
-        <DialogFooter className="mt-4">
-          <Button
-            variant="outline"
-            onClick={() => setIsOpen(false)}
-          >
-            Cancel
+            <PlusCircle className="h-5 w-5" />
+            <span className="text-base font-medium">New Research</span>
           </Button>
-          <Button
-            onClick={handleStartResearch}
-            className="bg-gray-900 hover:bg-gray-800"
-          >
-            Start Research
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="space-y-1.5">
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Define Research Context
+            </DialogTitle>
+            <DialogDescription className="text-gray-500">
+              Set the scope of your research by selecting the context options below.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="grid grid-cols-3 gap-3 mt-4">
+            <Card 
+              className={`cursor-pointer transition-all duration-200 hover:shadow-md
+                       ${selectedOption === 'companies' ? 'ring-2 ring-gray-900 bg-gray-50' : ''}`}
+              onClick={() => setSelectedOption('companies')}
+            >
+              <CardHeader className="p-4">
+                <Building2 className="w-5 h-5 text-gray-700 mb-1.5" />
+                <CardTitle className="text-base">Companies</CardTitle>
+                <CardDescription className="text-sm">Select target companies</CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card 
+              className={`cursor-pointer transition-all duration-200 hover:shadow-md
+                       ${selectedOption === 'documents' ? 'ring-2 ring-gray-900 bg-gray-50' : ''}`}
+              onClick={() => setSelectedOption('documents')}
+            >
+              <CardHeader>
+                <FileText className="w-6 h-6 text-gray-700 mb-2" />
+                <CardTitle className="text-lg">Documents</CardTitle>
+                <CardDescription>Add specific documents</CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card 
+              className={`cursor-pointer transition-all duration-200 hover:shadow-md
+                       ${includeNews ? 'bg-gray-900 text-white' : ''}`}
+              onClick={() => setIncludeNews(!includeNews)}
+            >
+              <CardHeader>
+                <Newspaper className={`w-6 h-6 mb-2 ${includeNews ? 'text-white' : 'text-gray-700'}`} />
+                <CardTitle className="text-lg">News</CardTitle>
+                <CardDescription className={includeNews ? 'text-gray-200' : ''}>
+                  {includeNews ? 'News Included' : 'Include news articles'}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card 
+              className={`cursor-pointer transition-all duration-200 hover:shadow-md
+                       ${includeWebAccess ? 'bg-gray-900 text-white' : ''}`}
+              onClick={() => setIncludeWebAccess(!includeWebAccess)}
+            >
+              <CardHeader>
+                <Globe className={`w-6 h-6 mb-2 ${includeWebAccess ? 'text-white' : 'text-gray-700'}`} />
+                <CardTitle className="text-lg">Web Access</CardTitle>
+                <CardDescription className={includeWebAccess ? 'text-gray-200' : ''}>
+                  {includeWebAccess ? 'Web Access Enabled' : 'Enable web access'}
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card 
+              className={`cursor-pointer transition-all duration-200 hover:shadow-md
+                       ${selectedOption === 'upload' ? 'ring-2 ring-gray-900 bg-gray-50' : ''}`}
+              onClick={() => setSelectedOption('upload')}
+            >
+              <CardHeader>
+                <Upload className="w-6 h-6 text-gray-700 mb-2" />
+                <CardTitle className="text-lg">Upload</CardTitle>
+                <CardDescription>Upload custom documents</CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+
+          <div className="mt-4">
+            {renderOptionContent()}
+          </div>
+
+          <DialogFooter className="mt-4">
+            <Button
+              variant="outline"
+              onClick={() => setIsOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStartResearch}
+              className="bg-gray-900 hover:bg-gray-800"
+            >
+              Start Research
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* New Type Selection Dialog */}
+      <Dialog open={showTypeSelection} onOpenChange={setShowTypeSelection}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold text-gray-900">
+              Start New Research
+            </DialogTitle>
+            <DialogDescription className="text-gray-500">
+              Choose how you want to begin your research.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-4 py-4">
+            <Button 
+              className="h-32 flex-col gap-2 hover:bg-gray-50" 
+              variant="outline" 
+              onClick={() => handleTypeSelection('chat')}
+            >
+              <MessageSquare className="h-8 w-8 text-gray-700" />
+              <span className="font-medium">Chat</span>
+              <span className="text-xs text-gray-500">
+                Free-form research conversation
+              </span>
+            </Button>
+            <Button 
+              className="h-32 flex-col gap-2 hover:bg-gray-50" 
+              variant="outline" 
+              onClick={() => handleTypeSelection('playbook')}
+            >
+              <BookOpen className="h-8 w-8 text-gray-700" />
+              <span className="font-medium">Playbook</span>
+              <span className="text-xs text-gray-500">
+                Structured research workflow
+              </span>
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 } 
