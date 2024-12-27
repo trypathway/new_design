@@ -17,39 +17,15 @@ const mockChatData: Record<string, { messages: Array<{ role: 'user' | 'assistant
   "1": {
     messages: [
       { role: 'user', content: "Can you analyze Apple's financial performance?" },
-      { role: 'assistant', content: "Let's take a look at Apple's financial performance based on their recent quarterly report[1]. Apple has shown strong financial performance in the last fiscal quarter. Their revenue reached $81.8 billion, which is a 1% decrease year-over-year, but still exceeded market expectations[1].\n\nKey highlights include:\n\n1. iPhone sales: $39.67 billion, up 2.8% year-over-year[1]\n2. Services revenue: $21.21 billion, up 8.2% year-over-year[1]\n3. Mac sales: $6.84 billion, down 7.3% year-over-year[1]\n4. iPad sales: $5.79 billion, down 19.8% year-over-year[1]\n\nDespite challenges in the global economy, Apple has maintained strong profit margins and continues to generate significant cash flow[2]. Their ability to grow iPhone and Services revenue demonstrates the strength of their ecosystem and brand loyalty.\n\n[1] Apple Q3 2023 Earnings Report\n[2] Apple 10-Q Filing, Q3 2023" },
+      { role: 'assistant', content: "Let's analyze Apple's recent performance..." }
     ],
     context: {
       companies: ['Apple'],
-      specificDocuments: ['Apple Q3 2023 Earnings Report', 'Apple 10-Q Filing, Q3 2023'],
+      specificDocuments: ['Apple Q3 2023 Earnings Report'],
       includeNews: true,
       includeWebAccess: false
     }
-  },
-  "2": {
-    messages: [
-      { role: 'user', content: "What's Tesla's current market position?" },
-      { role: 'assistant', content: "Tesla's current market position is quite strong in the electric vehicle (EV) sector. Let's break down some key aspects..." },
-    ],
-    context: {
-      companies: ['Tesla'],
-      specificDocuments: ['Tesla Q2 2023 Update'],
-      includeNews: true,
-      includeWebAccess: true
-    }
-  },
-  "3": {
-    messages: [
-      { role: 'user', content: "How has Microsoft's Azure grown recently?" },
-      { role: 'assistant', content: "Microsoft's Azure has shown significant growth in recent years. Let's examine some key growth indicators..." },
-    ],
-    context: {
-      companies: ['Microsoft'],
-      specificDocuments: ['Microsoft FY23 Q4 Earnings Release'],
-      includeNews: false,
-      includeWebAccess: true
-    }
-  },
+  }
 }
 
 // Mock PDF data
@@ -57,14 +33,7 @@ const mockPDFData = {
   "Apple Q3 2023 Earnings Report": {
     url: "/placeholder.svg?height=1000&width=800",
     highlights: [
-      { page: 1, rect: { x1: 50, y1: 100, x2: 400, y2: 150 } },
-      { page: 2, rect: { x1: 100, y1: 200, x2: 450, y2: 250 } },
-    ]
-  },
-  "Apple 10-Q Filing, Q3 2023": {
-    url: "/placeholder.svg?height=1000&width=800",
-    highlights: [
-      { page: 5, rect: { x1: 75, y1: 300, x2: 425, y2: 350 } },
+      { page: 1, rect: { x1: 50, y1: 100, x2: 400, y2: 150 } }
     ]
   }
 }
@@ -75,19 +44,29 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [selectedCitation, setSelectedCitation] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [context, setContext] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const searchParams = useSearchParams()
 
   useEffect(() => {
     const loadData = async () => {
+      setLoading(true)
       try {
+        console.log('Loading chat data for ID:', params.id) // Debug log
+        
         if (params.id === 'new') {
           const contextParam = searchParams.get('context')
+          console.log('Context param:', contextParam) // Debug log
+          
           if (contextParam) {
             const parsedContext = JSON.parse(decodeURIComponent(contextParam))
             setContext(parsedContext)
+          } else {
+            console.log('No context parameter found') // Debug log
           }
         } else {
           const chatData = mockChatData[params.id]
+          console.log('Found chat data:', chatData) // Debug log
+          
           if (chatData) {
             setMessages(chatData.messages)
             setContext(chatData.context)
@@ -98,6 +77,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       } catch (error) {
         console.error('Error loading chat:', error)
         setError('Failed to load chat data. Please try again.')
+      } finally {
+        setLoading(false)
       }
     }
 
@@ -127,6 +108,14 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const handleErrorDismiss = useCallback(() => {
     setError(null)
   }, [])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p>Loading chat...</p>
+      </div>
+    )
+  }
 
   return (
     <div className="min-h-screen bg-background">
