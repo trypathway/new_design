@@ -79,39 +79,30 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
   useEffect(() => {
     const loadData = async () => {
-      if (params.id === 'new') {
-        // Parse context for new chat
-        const contextParam = searchParams.get('context')
-        if (contextParam) {
-          try {
+      try {
+        if (params.id === 'new') {
+          const contextParam = searchParams.get('context')
+          if (contextParam) {
             const parsedContext = JSON.parse(decodeURIComponent(contextParam))
             setContext(parsedContext)
-          } catch (error) {
-            console.error('Error parsing context:', error)
-            setError('Failed to parse context data. Please try again.')
-            return
           }
-        }
-      } else {
-        // Load existing chat data
-        try {
+        } else {
           const chatData = mockChatData[params.id]
           if (chatData) {
             setMessages(chatData.messages)
             setContext(chatData.context)
           } else {
-            console.warn(`No chat data found for id: ${params.id}`)
             setError('Chat not found. Please select a different chat or start a new one.')
           }
-        } catch (error) {
-          console.error(`Error loading chat data for id ${params.id}:`, error)
-          setError('Failed to load chat data. Please try again.')
         }
+      } catch (error) {
+        console.error('Error loading chat:', error)
+        setError('Failed to load chat data. Please try again.')
       }
     }
 
     loadData()
-  }, [searchParams, params.id])
+  }, [params.id, searchParams])
 
   const handleSend = useCallback(() => {
     if (input.trim()) {
@@ -138,74 +129,88 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   }, [])
 
   return (
-    <ErrorBoundary>
-      <div className="container mx-auto p-6 h-screen flex flex-col relative">
+    <div className="min-h-screen bg-background">
+      <div className="container mx-auto p-6 flex flex-col min-h-screen">
         <BackToStartButton />
-        <h1 className="text-3xl font-bold mb-6 mt-12">Research Chat {params.id === 'new' ? '(New)' : `#${params.id}`}</h1>
+        
+        <h1 className="text-3xl font-bold mb-6 mt-12">
+          Research Chat {params.id === 'new' ? '(New)' : `#${params.id}`}
+        </h1>
+
         {error && (
-          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4 flex justify-between items-center" role="alert">
-            <div>
-              <strong className="font-bold">Error: </strong>
-              <span className="block sm:inline">{error}</span>
-            </div>
-            <button onClick={handleErrorDismiss} className="text-red-700">
-              <X className="h-5 w-5" />
-            </button>
+          <div className="bg-destructive/15 text-destructive px-4 py-3 rounded mb-4 flex justify-between items-center" role="alert">
+            <span>{error}</span>
+            <Button variant="ghost" size="icon" onClick={handleErrorDismiss}>
+              <X className="h-4 w-4" />
+            </Button>
           </div>
         )}
+
         {context && (
-          <Card className="mb-4 p-4">
-            <h2 className="text-xl font-semibold mb-2">Research Context</h2>
-            <p>Companies: {context.companies?.join(', ') || 'None specified'}</p>
-            <p>Specific Documents: {context.specificDocuments?.join(', ') || 'None specified'}</p>
-            <p>Include News: {context.includeNews ? 'Yes' : 'No'}</p>
-            <p>Web Access: {context.includeWebAccess ? 'Yes' : 'No'}</p>
+          <Card className="mb-4">
+            <CardContent className="pt-6">
+              <h2 className="text-xl font-semibold mb-2">Research Context</h2>
+              <p>Companies: {context.companies?.join(', ') || 'None specified'}</p>
+              <p>Documents: {context.specificDocuments?.join(', ') || 'None specified'}</p>
+              <p>Include News: {context.includeNews ? 'Yes' : 'No'}</p>
+              <p>Web Access: {context.includeWebAccess ? 'Yes' : 'No'}</p>
+            </CardContent>
           </Card>
         )}
+
         <div className={`flex ${selectedCitation ? 'space-x-4' : ''} flex-grow`}>
           <Card className={`flex-grow flex flex-col ${selectedCitation ? 'w-1/2' : 'w-full'}`}>
             <ScrollArea className="flex-grow p-4">
               {messages.map((message, index) => (
                 <div key={index} className={`flex items-start mb-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex items-center ${message.role === 'user' ? 'bg-blue-500 text-white' : 'bg-gray-200'} rounded-lg p-3 max-w-[70%]`}>
-                    {message.role === 'user' ? <User className="h-5 w-5 mr-2" /> : <Bot className="h-5 w-5 mr-2" />}
-                    <p>
-                      {message.content.split(/(\[[0-9]+\])/).map((part, i) => {
-                        if (part.match(/\[[0-9]+\]/)) {
-                          return (
-                            <span
-                              key={i}
-                              className="text-blue-600 cursor-pointer hover:underline"
-                              onClick={() => handleCitationClick(part.slice(1, -1))}
-                            >
-                              {part}
-                            </span>
-                          )
-                        }
-                        return part
-                      })}
-                    </p>
+                  <div className={`flex items-start space-x-2 ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'} rounded-lg p-3 max-w-[70%]`}>
+                    {message.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+                    <div className="space-y-1">
+                      <p className="text-sm leading-relaxed">
+                        {message.content.split(/(\[[0-9]+\])/).map((part, i) => {
+                          if (part.match(/\[[0-9]+\]/)) {
+                            return (
+                              <button
+                                key={i}
+                                className="text-blue-600 hover:underline"
+                                onClick={() => handleCitationClick(part.slice(1, -1))}
+                              >
+                                {part}
+                              </button>
+                            )
+                          }
+                          return part
+                        })}
+                      </p>
+                    </div>
                   </div>
                 </div>
               ))}
             </ScrollArea>
-            <CardContent className="border-t">
-              <div className="flex items-center space-x-2">
+            
+            <CardContent className="border-t p-4">
+              <form 
+                onSubmit={(e) => {
+                  e.preventDefault()
+                  handleSend()
+                }}
+                className="flex items-center space-x-2"
+              >
                 <Input 
                   value={input} 
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Type your message here..."
-                  onKeyPress={(e) => e.key === 'Enter' && handleSend()}
                 />
-                <Button onClick={handleSend}>
+                <Button type="submit">
                   <SendHorizontal className="h-4 w-4" />
                 </Button>
-              </div>
+              </form>
             </CardContent>
           </Card>
+
           {selectedCitation && (
-            <Card className="w-1/2 flex flex-col">
-              <CardContent className="flex-grow relative">
+            <Card className="w-1/2">
+              <CardContent className="relative p-4">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -215,16 +220,15 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                   <X className="h-4 w-4" />
                 </Button>
                 <PDFViewer
-                  pdfUrl={mockPDFData[selectedCitation as keyof typeof mockPDFData].url}
-                  highlights={mockPDFData[selectedCitation as keyof typeof mockPDFData].highlights}
+                  pdfUrl={mockPDFData[selectedCitation as keyof typeof mockPDFData]?.url}
+                  highlights={mockPDFData[selectedCitation as keyof typeof mockPDFData]?.highlights}
                 />
               </CardContent>
             </Card>
           )}
         </div>
-        <LogViewer />
       </div>
-    </ErrorBoundary>
+    </div>
   )
 }
 
