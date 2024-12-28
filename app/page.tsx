@@ -120,11 +120,11 @@ export default function HomePage() {
         <div className="container mx-auto max-w-7xl px-8 py-12">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900 mb-2">
-                Investment Research Platform
+              <h1 className="text-4xl font-bold text-gray-900">
+                Quantly
               </h1>
               <p className="text-gray-500 text-lg">
-                AI-powered research assistant for investment professionals
+                AI-powered investment research assistant
               </p>
             </div>
             <NewResearchModal />

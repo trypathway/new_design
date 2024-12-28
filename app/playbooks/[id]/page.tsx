@@ -18,7 +18,9 @@ import {
   Edit2,
   Save,
   PlayCircle,
-  Wand2
+  Wand2,
+  ChevronDown,
+  ChevronUp
 } from 'lucide-react'
 import { BackToStartButton } from '@/components/back-to-start-button'
 import { PromptImproverModal } from '@/components/prompt-improver-modal'
@@ -67,6 +69,7 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
   const [steps, setSteps] = useState<PlaybookStep[]>([])
   const [editingStep, setEditingStep] = useState<string | null>(null)
   const [improvingStepId, setImprovingStepId] = useState<string | null>(null)
+  const [isContextCollapsed, setIsContextCollapsed] = useState(false)
 
   useEffect(() => {
     const contextParam = searchParams.get('context')
@@ -121,7 +124,7 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
         <div className="flex items-center justify-between mb-6 mt-12">
           <div>
             <h1 className="text-3xl font-bold">
-              {params.id === 'new' ? 'Create New Playbook' : playbook?.name}
+              {params.id === 'new' ? 'New Quantly Playbook' : playbook?.name}
             </h1>
             {playbook?.description && (
               <p className="text-gray-500 mt-1">{playbook.description}</p>
@@ -153,7 +156,36 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
         {context && (
           <Card className="mb-6 border-gray-200">
             <CardContent className="p-4">
-              {/* ... Context content ... */}
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="bg-gray-100 p-1.5 rounded-md">
+                    <FileText className="h-4 w-4 text-gray-700" />
+                  </div>
+                  <h2 className="text-base font-semibold text-gray-900">Research Context</h2>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsContextCollapsed(!isContextCollapsed)}
+                  className="text-gray-500 hover:text-gray-900"
+                >
+                  {isContextCollapsed ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronUp className="h-4 w-4" />
+                  )}
+                </Button>
+              </div>
+              
+              <div
+                className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                  isContextCollapsed ? 'max-h-0' : 'max-h-[500px]'
+                }`}
+              >
+                <div className="grid grid-cols-2 gap-3">
+                  {/* ... Context content ... */}
+                </div>
+              </div>
             </CardContent>
           </Card>
         )}

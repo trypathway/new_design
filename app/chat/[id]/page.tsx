@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { SendHorizontal, User, Bot, X, Wand2, FileText, Building2, Newspaper, Globe } from 'lucide-react'
+import { SendHorizontal, User, Bot, X, Wand2, FileText, Building2, Newspaper, Globe, ChevronDown, ChevronUp } from 'lucide-react'
 import { BackToStartButton } from '@/components/back-to-start-button'
 import { PDFViewer } from '@/components/pdf-viewer'
 import { ErrorBoundary } from '@/components/error-boundary'
@@ -17,12 +17,32 @@ import { PromptImproverModal } from '@/components/prompt-improver-modal'
 const mockChatData: Record<string, { messages: Array<{ role: 'user' | 'assistant', content: string }>, context: any }> = {
   "1": {
     messages: [
-      { role: 'user', content: "Can you analyze Apple's financial performance?" },
-      { role: 'assistant', content: "Let's analyze Apple's recent performance..." }
+      { 
+        role: 'user', 
+        content: "Can you analyze Apple's financial performance?" 
+      },
+      { 
+        role: 'assistant', 
+        content: `Based on Apple's recent financial performance, there are several key points to highlight:
+
+1. Revenue Growth: Apple reported a revenue of $81.8 billion in Q3 2023 [1], showing a slight decline from the previous year's $83.0 billion. However, this was better than market expectations.
+
+2. Product Performance: iPhone sales remained strong at $39.67 billion [1], though slightly down from $40.67 billion year-over-year. The Services segment continues to show impressive growth, reaching $21.21 billion [2].
+
+3. Profit Margins: The company maintained strong profit margins, with a gross margin of 44.5% [2], indicating efficient cost management and premium pricing power.
+
+4. Market Position: According to the latest earnings call transcript [3], Apple continues to see strong customer satisfaction and loyalty, with particularly strong performance in emerging markets.
+
+5. Future Outlook: The company's guidance suggests continued strength in Services and potential growth opportunities in AI and augmented reality [3].
+
+[1] Apple Q3 2023 Earnings Report
+[2] Apple Q3 2023 10-Q Filing
+[3] Apple Q3 2023 Earnings Call Transcript` 
+      }
     ],
     context: {
       companies: ['Apple'],
-      specificDocuments: ['Apple Q3 2023 Earnings Report'],
+      specificDocuments: ['Apple Q3 2023 Earnings Report', 'Apple Q3 2023 10-Q Filing', 'Apple Q3 2023 Earnings Call Transcript'],
       includeNews: true,
       includeWebAccess: false
     }
@@ -47,6 +67,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [context, setContext] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [showPromptImprover, setShowPromptImprover] = useState(false)
+  const [isContextCollapsed, setIsContextCollapsed] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -92,9 +113,25 @@ export default function ChatPage({ params }: { params: { id: string } }) {
       setMessages(prevMessages => [...prevMessages, { role: 'user', content: input }])
       setInput('')
 
-      // Mock AI response
+      // Mock AI response with citations
       setTimeout(() => {
-        setMessages(prevMessages => [...prevMessages, { role: 'assistant', content: "I'm sorry, but as an AI language model, I don't have real-time data or the ability to perform actual analysis. In a real application, this is where the AI would provide a response based on the user's input and the given context." }])
+        setMessages(prevMessages => [...prevMessages, { 
+          role: 'assistant', 
+          content: `Based on the available data, here's the analysis:
+
+1. Financial Performance: The company shows strong fundamentals with consistent revenue growth [1], maintaining a healthy profit margin above industry averages.
+
+2. Market Position: Recent market share data indicates a dominant position in key segments [2], particularly in premium products and services.
+
+3. Future Outlook: According to recent earnings calls [3], management expects continued growth driven by:
+   - Product innovation pipeline
+   - Services expansion
+   - Market penetration in emerging economies
+
+[1] Q3 2023 Earnings Report
+[2] Market Analysis 2023
+[3] Q3 2023 Earnings Call Transcript`
+        }])
       }, 1000)
     }
   }, [input])
@@ -125,7 +162,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         <BackToStartButton />
         
         <h1 className="text-3xl font-bold mb-6 mt-12">
-          Research Chat {params.id === 'new' ? '(New)' : `#${params.id}`}
+          Quantly {params.id === 'new' ? '(New Research)' : `Research #${params.id}`}
         </h1>
 
         {error && (
@@ -140,74 +177,94 @@ export default function ChatPage({ params }: { params: { id: string } }) {
         {context && (
           <Card className="mb-4 border-gray-200">
             <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="bg-gray-100 p-1.5 rounded-md">
-                  <FileText className="h-4 w-4 text-gray-700" />
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="bg-gray-100 p-1.5 rounded-md">
+                    <FileText className="h-4 w-4 text-gray-700" />
+                  </div>
+                  <h2 className="text-base font-semibold text-gray-900">Research Context</h2>
                 </div>
-                <h2 className="text-base font-semibold text-gray-900">Research Context</h2>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsContextCollapsed(!isContextCollapsed)}
+                  className="text-gray-500 hover:text-gray-900"
+                >
+                  {isContextCollapsed ? (
+                    <ChevronDown className="h-4 w-4" />
+                  ) : (
+                    <ChevronUp className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
               
-              <div className="grid grid-cols-2 gap-3">
-                {/* Companies */}
-                <div className="space-y-1.5">
-                  <h3 className="text-xs font-medium text-gray-700">Companies</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {context.companies?.length > 0 ? (
-                      context.companies.map((company: string) => (
-                        <span 
-                          key={company}
-                          className="inline-flex items-center px-2 py-0.5 rounded-full 
-                                   text-xs bg-gray-100 text-gray-700 border border-gray-200"
-                        >
-                          <Building2 className="h-3 w-3 mr-1" />
-                          {company}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-gray-500">None specified</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Documents */}
-                <div className="space-y-1.5">
-                  <h3 className="text-xs font-medium text-gray-700">Documents</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {context.specificDocuments?.length > 0 ? (
-                      context.specificDocuments.map((doc: string) => (
-                        <span 
-                          key={doc}
-                          className="inline-flex items-center px-2 py-0.5 rounded-full 
-                                   text-xs bg-gray-100 text-gray-700 border border-gray-200"
-                        >
-                          <FileText className="h-3 w-3 mr-1" />
-                          {doc}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-gray-500">None specified</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Additional Context */}
-                <div className="col-span-2 flex gap-3 mt-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className={`p-1 rounded-md ${context.includeNews ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                      <Newspaper className="h-3.5 w-3.5" />
+              <div
+                className={`overflow-hidden transition-all duration-200 ease-in-out ${
+                  isContextCollapsed ? 'max-h-0' : 'max-h-[500px]'
+                }`}
+              >
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Companies */}
+                  <div className="space-y-1.5">
+                    <h3 className="text-xs font-medium text-gray-700">Companies</h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {context.companies?.length > 0 ? (
+                        context.companies.map((company: string) => (
+                          <span 
+                            key={company}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full 
+                                     text-xs bg-gray-100 text-gray-700 border border-gray-200"
+                          >
+                            <Building2 className="h-3 w-3 mr-1" />
+                            {company}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-500">None specified</span>
+                      )}
                     </div>
-                    <span className="text-xs text-gray-700">
-                      News: <span className="font-medium">{context.includeNews ? 'Yes' : 'No'}</span>
-                    </span>
                   </div>
 
-                  <div className="flex items-center gap-1.5">
-                    <div className={`p-1 rounded-md ${context.includeWebAccess ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                      <Globe className="h-3.5 w-3.5" />
+                  {/* Documents */}
+                  <div className="space-y-1.5">
+                    <h3 className="text-xs font-medium text-gray-700">Documents</h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {context.specificDocuments?.length > 0 ? (
+                        context.specificDocuments.map((doc: string) => (
+                          <span 
+                            key={doc}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full 
+                                     text-xs bg-gray-100 text-gray-700 border border-gray-200"
+                          >
+                            <FileText className="h-3 w-3 mr-1" />
+                            {doc}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-500">None specified</span>
+                      )}
                     </div>
-                    <span className="text-xs text-gray-700">
-                      Web: <span className="font-medium">{context.includeWebAccess ? 'Yes' : 'No'}</span>
-                    </span>
+                  </div>
+
+                  {/* Additional Context */}
+                  <div className="col-span-2 flex gap-3 mt-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className={`p-1 rounded-md ${context.includeNews ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        <Newspaper className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="text-xs text-gray-700">
+                        News: <span className="font-medium">{context.includeNews ? 'Yes' : 'No'}</span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <div className={`p-1 rounded-md ${context.includeWebAccess ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        <Globe className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="text-xs text-gray-700">
+                        Web: <span className="font-medium">{context.includeWebAccess ? 'Yes' : 'No'}</span>
+                      </span>
+                    </div>
                   </div>
                 </div>
               </div>

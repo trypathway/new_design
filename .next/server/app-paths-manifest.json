@@ -1,6 +1,6 @@
 {
   "/page": "app/page.js",
   "/chat/[id]/page": "app/chat/[id]/page.js",
-  "/playbooks/[id]/page": "app/playbooks/[id]/page.js",
-  "/playbooks/page": "app/playbooks/page.js"
+  "/playbooks/page": "app/playbooks/page.js",
+  "/playbooks/[id]/page": "app/playbooks/[id]/page.js"
 }

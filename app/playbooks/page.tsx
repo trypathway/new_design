@@ -38,7 +38,9 @@ export default function PlaybookSelection() {
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6">
         <BackToStartButton />
-        <h1 className="text-3xl font-bold mb-6 mt-12">Select a Playbook</h1>
+        <h1 className="text-3xl font-bold mb-6 mt-12">
+          Quantly Playbooks
+        </h1>
         {context && (
           <Card className="mb-4 border-gray-200">
             <CardContent className="p-4">
