@@ -88,7 +88,7 @@ const formatDate = (dateString: string) => {
 }
 
 // Get icon for category
-const getCategoryIcon = (type: 'Chat' | 'Playbook') => {
+const getCategoryIcon = (type: string) => {
   switch (type) {
     case 'Chat':
       return <MessageSquare className="h-4 w-4 text-blue-500" />
