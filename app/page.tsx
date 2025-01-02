@@ -10,9 +10,11 @@ import {
   Building2, 
   Star, 
   Clock,
-  ChevronRight 
+  ChevronRight,
+  MessageSquare, 
+  BookOpen
 } from 'lucide-react'
-import { NewResearchModal } from "@/components/new-research-modal"
+import { NewResearchModal } from "@/app/components/new-research-modal"
 
 // Enhanced mock data with more diverse examples
 const mockChatData = {
@@ -23,11 +25,11 @@ const mockChatData = {
     ],
     context: {
       companies: ['Apple'],
-      specificDocuments: ['Apple Q3 2023 Earnings Report'],
+      specificDocuments: ['Apple Q3 2023 Earnings Report', 'Industry Analysis 2023'],
       includeNews: true,
       includeWebAccess: false,
       timestamp: '2023-12-27T10:30:00Z',
-      category: 'Financial Analysis'
+      type: 'Chat'
     }
   },
   "2": {
@@ -41,7 +43,7 @@ const mockChatData = {
       includeNews: true,
       includeWebAccess: true,
       timestamp: '2023-12-26T15:45:00Z',
-      category: 'Competitive Analysis'
+      type: 'Chat'
     }
   },
   "3": {
@@ -55,7 +57,7 @@ const mockChatData = {
       includeNews: true,
       includeWebAccess: true,
       timestamp: '2023-12-25T09:15:00Z',
-      category: 'Industry Analysis'
+      type: 'Chat'
     }
   },
   "4": {
@@ -69,7 +71,7 @@ const mockChatData = {
       includeNews: true,
       includeWebAccess: true,
       timestamp: '2023-12-24T14:20:00Z',
-      category: 'Supply Chain Analysis'
+      type: 'Chat'
     }
   }
 }
@@ -86,16 +88,14 @@ const formatDate = (dateString: string) => {
 }
 
 // Get icon for category
-const getCategoryIcon = (category: string) => {
-  switch (category) {
-    case 'Financial Analysis':
-      return <TrendingUp className="h-4 w-4 text-emerald-500" />
-    case 'Competitive Analysis':
-      return <Building2 className="h-4 w-4 text-blue-500" />
-    case 'Industry Analysis':
-      return <Star className="h-4 w-4 text-purple-500" />
+const getCategoryIcon = (type: 'Chat' | 'Playbook') => {
+  switch (type) {
+    case 'Chat':
+      return <MessageSquare className="h-4 w-4 text-blue-500" />
+    case 'Playbook':
+      return <BookOpen className="h-4 w-4 text-emerald-500" />
     default:
-      return <Clock className="h-4 w-4 text-gray-500" />
+      return <MessageSquare className="h-4 w-4 text-gray-500" />
   }
 }
 
@@ -111,6 +111,10 @@ export default function HomePage() {
     }
     
     router.push(`/chat/new?context=${encodeURIComponent(JSON.stringify(defaultContext))}`)
+  }
+
+  const handleViewAllClick = () => {
+    router.push('/chat/history')  // Redirect to chat history page
   }
 
   return (
@@ -144,6 +148,7 @@ export default function HomePage() {
           <Button 
             variant="ghost" 
             className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+            onClick={handleViewAllClick}
           >
             View All <ChevronRight className="h-4 w-4 ml-1" />
           </Button>
@@ -162,10 +167,14 @@ export default function HomePage() {
                 <div className="p-6 bg-white">
                   {/* Category and Date */}
                   <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-2 bg-gray-100 px-3 py-1.5 rounded-full">
-                      {getCategoryIcon(chat.context.category)}
-                      <span className="text-sm font-medium text-gray-700">
-                        {chat.context.category}
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full
+                                    ${chat.context.type === 'Chat'
+                                      ? 'bg-blue-50 text-blue-700'
+                                      : 'bg-emerald-50 text-emerald-700'
+                                    }`}>
+                      {getCategoryIcon(chat.context.type)}
+                      <span className="text-sm font-medium">
+                        {chat.context.type}
                       </span>
                     </div>
                     <time className="text-sm text-gray-500">

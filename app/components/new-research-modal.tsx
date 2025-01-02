@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { MessageSquare, BookOpen, PlusCircle } from 'lucide-react'
-import { ContextWindow } from './context-window'
+import { ContextWindow } from '@/app/components/context-window'
 
 export function NewResearchModal() {
   const [open, setOpen] = useState(false)
@@ -13,7 +13,10 @@ export function NewResearchModal() {
   const [context, setContext] = useState<any>(null)
   const router = useRouter()
 
+  console.log('NewResearchModal state:', { open, showContext });
+
   const handleNewResearchClick = useCallback(() => {
+    console.log('New Research clicked');
     setShowContext(true)
   }, [])
 
@@ -27,6 +30,7 @@ export function NewResearchModal() {
   }, [context, router])
 
   const handleContextComplete = useCallback((contextData: any) => {
+    console.log('Context complete:', contextData);
     setContext(contextData)
     setShowContext(false)
     setOpen(true)
@@ -39,7 +43,10 @@ export function NewResearchModal() {
       </Button>
       <ContextWindow 
         isOpen={showContext} 
-        onClose={() => setShowContext(false)} 
+        onClose={() => {
+          console.log('Closing context window');
+          setShowContext(false)
+        }} 
         onComplete={handleContextComplete} 
       />
       <Dialog open={open} onOpenChange={setOpen}>
@@ -51,13 +58,21 @@ export function NewResearchModal() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid grid-cols-2 gap-4 py-4">
-            <Button className="h-24 flex-col" variant="outline" onClick={() => handleSelection('chat')}>
-              <MessageSquare className="mb-2 h-6 w-6" />
-              Chat
+            <Button 
+              className="h-32 flex flex-col items-center justify-center space-y-2 p-4" 
+              variant="outline" 
+              onClick={() => handleSelection('chat')}
+            >
+              <MessageSquare className="h-8 w-8" />
+              <span className="text-base font-medium">Chat</span>
             </Button>
-            <Button className="h-24 flex-col" variant="outline" onClick={() => handleSelection('playbook')}>
-              <BookOpen className="mb-2 h-6 w-6" />
-              Playbook
+            <Button 
+              className="h-32 flex flex-col items-center justify-center space-y-2 p-4" 
+              variant="outline" 
+              onClick={() => handleSelection('playbook')}
+            >
+              <BookOpen className="h-8 w-8" />
+              <span className="text-base font-medium">Playbook</span>
             </Button>
           </div>
         </DialogContent>
