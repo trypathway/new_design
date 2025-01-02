@@ -45,12 +45,12 @@ export function ContextWindow({ isOpen, onClose, onComplete }: { isOpen: boolean
 
   const handleCompanyAdd = useCallback((company: string) => {
     if (company && !context.companies.includes(company)) {
-      setContext(prev => ({ ...prev, companies: [...prev.companies, company] }))
+      setContext((prev: { companies: any }) => ({ ...prev, companies: [...prev.companies, company] }))
     }
   }, [context.companies])
 
   const handleDocumentToggle = useCallback((document: any) => {
-    setContext(prev => {
+    setContext((prev: { specificDocuments: any[] }) => {
       const updatedDocuments = prev.specificDocuments.some((doc: any) => doc.id === document.id)
         ? prev.specificDocuments.filter((doc: any) => doc.id !== document.id)
         : [...prev.specificDocuments, document]
@@ -59,16 +59,16 @@ export function ContextWindow({ isOpen, onClose, onComplete }: { isOpen: boolean
   }, [])
 
   const handleNewsToggle = useCallback(() => {
-    setContext(prev => ({ ...prev, includeNews: !prev.includeNews }))
+    setContext((prev: { includeNews: any }) => ({ ...prev, includeNews: !prev.includeNews }))
   }, [])
 
   const handleWebAccessToggle = useCallback(() => {
-    setContext(prev => ({ ...prev, includeWebAccess: !prev.includeWebAccess }))
+    setContext((prev: { includeWebAccess: any }) => ({ ...prev, includeWebAccess: !prev.includeWebAccess }))
   }, [])
 
   const handleFileUpload = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
-      setContext(prev => ({ ...prev, uploadedFiles: [...prev.uploadedFiles, ...Array.from(event.target.files as FileList).map(file => file.name)] }))
+      setContext((prev: { uploadedFiles: any }) => ({ ...prev, uploadedFiles: [...prev.uploadedFiles, ...Array.from(event.target.files as FileList).map(file => file.name)] }))
     }
   }, [])
 
