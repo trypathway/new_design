@@ -1,8 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import { Dialog } from '@/components/ui/dialog'
+import { Dialog, DialogHeader } from '@/components/ui/dialog'
 import { PDFViewer } from '@/components/pdf-viewer'
+import { DialogContent, DialogDescription, DialogTitle } from '@radix-ui/react-dialog';
 
 interface Citation {
   id: string;
@@ -102,13 +103,13 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
       {/* Citation viewer modal */}
       <Dialog open={isPdfOpen} onOpenChange={setIsPdfOpen}>
-        <Dialog.Content className="max-w-4xl w-full h-[80vh]">
-          <Dialog.Header>
-            <Dialog.Title>Source Document</Dialog.Title>
-            <Dialog.Description>
+        <DialogContent className="max-w-4xl w-full h-[80vh]">
+          <DialogHeader>
+            <DialogTitle>Source Document</DialogTitle>
+            <DialogDescription>
               {selectedCitation?.text}
-            </Dialog.Description>
-          </Dialog.Header>
+            </DialogDescription>
+          </DialogHeader>
           
           {selectedCitation && (
             <PDFViewer 
@@ -116,7 +117,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
               initialPage={selectedCitation.page}
             />
           )}
-        </Dialog.Content>
+        </DialogContent>
       </Dialog>
     </div>
   )
