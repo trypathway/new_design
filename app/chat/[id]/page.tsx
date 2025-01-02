@@ -14,11 +14,40 @@ import { LogViewer } from '@/components/log-viewer'
 import { PromptImproverModal } from '@/components/prompt-improver-modal'
 
 // Mock data for existing chats
-const mockChatData: Record<string, { messages: Array<{ role: 'user' | 'assistant', content: string }>, context: any }> = {
+const mockChatData: Record<string, { messages: Array<{ 
+  role: 'user' | 'assistant', 
+  content: string,
+  citations?: Array<{
+    id: string,
+    page: number,
+    text: string,
+    fileUrl: string
+  }>
+}>, context: any }> = {
   "1": {
     messages: [
-      { role: 'user', content: "Can you analyze Apple's financial performance?" },
-      { role: 'assistant', content: "Let's analyze Apple's recent performance..." }
+      { 
+        role: 'user', 
+        content: "Can you analyze Apple's financial performance?" 
+      },
+      { 
+        role: 'assistant', 
+        content: "According to Apple's recent earnings report[1], the company showed strong performance in Q3 2023. Revenue exceeded expectations[2] with significant growth in Services.",
+        citations: [
+          {
+            id: "1",
+            page: 1,
+            text: "Apple Q3 2023 Earnings Overview",
+            fileUrl: "/earnings.pdf"
+          },
+          {
+            id: "2",
+            page: 3,
+            text: "Revenue Analysis",
+            fileUrl: "/earnings.pdf"
+          }
+        ]
+      }
     ],
     context: {
       companies: ['Apple'],
@@ -31,16 +60,31 @@ const mockChatData: Record<string, { messages: Array<{ role: 'user' | 'assistant
 
 // Mock PDF data
 const mockPDFData = {
-  "Apple Q3 2023 Earnings Report": {
-    url: "/placeholder.svg?height=1000&width=800",
+  "1": {
+    url: "/earnings.pdf",
     highlights: [
       { page: 1, rect: { x1: 50, y1: 100, x2: 400, y2: 150 } }
+    ]
+  },
+  "2": {
+    url: "/earnings.pdf",
+    highlights: [
+      { page: 3, rect: { x1: 50, y1: 100, x2: 400, y2: 150 } }
     ]
   }
 }
 
 export default function ChatPage({ params }: { params: { id: string } }) {
-  const [messages, setMessages] = useState<Array<{ role: 'user' | 'assistant', content: string }>>([])
+  const [messages, setMessages] = useState<Array<{
+    role: 'user' | 'assistant',
+    content: string,
+    citations?: Array<{
+      id: string,
+      page: number,
+      text: string,
+      fileUrl: string
+    }>
+  }>>([])
   const [input, setInput] = useState('')
   const [selectedCitation, setSelectedCitation] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -99,8 +143,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     }
   }, [input])
 
-  const handleCitationClick = useCallback((citation: string) => {
-    setSelectedCitation(citation)
+  const handleCitationClick = useCallback((citation: { id: string, page: number, text: string, fileUrl: string }) => {
+    setSelectedCitation(citation.id)
   }, [])
 
   const closePDFViewer = useCallback(() => {
@@ -226,17 +270,19 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                       <p className="text-sm leading-relaxed">
                         {message.content.split(/(\[[0-9]+\])/).map((part, i) => {
                           if (part.match(/\[[0-9]+\]/)) {
-                            return (
+                            const citationId = part.slice(1, -1);
+                            const citation = message.citations?.find(c => c.id === citationId);
+                            return citation ? (
                               <button
                                 key={i}
                                 className="text-blue-600 hover:underline"
-                                onClick={() => handleCitationClick(part.slice(1, -1))}
+                                onClick={() => handleCitationClick(citation)}
                               >
                                 {part}
                               </button>
-                            )
+                            ) : part;
                           }
-                          return part
+                          return part;
                         })}
                       </p>
                     </div>
@@ -293,7 +339,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                   <X className="h-4 w-4" />
                 </Button>
                 <PDFViewer
-                  pdfUrl={mockPDFData[selectedCitation as keyof typeof mockPDFData]?.url}
+                  fileUrl={mockPDFData[selectedCitation as keyof typeof mockPDFData]?.url}
+                  initialPage={1}
                   highlights={mockPDFData[selectedCitation as keyof typeof mockPDFData]?.highlights}
                 />
               </CardContent>
