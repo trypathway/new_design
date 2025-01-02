@@ -6,12 +6,13 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { SendHorizontal, User, Bot, X, Wand2, FileText, Building2, Newspaper, Globe } from 'lucide-react'
+import { SendHorizontal, User, Bot, X, Wand2, FileText, Building2, Newspaper, Globe, ChevronRight, Plus } from 'lucide-react'
 import { BackToStartButton } from '@/components/back-to-start-button'
 import { PDFViewer } from '@/components/pdf-viewer'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { LogViewer } from '@/components/log-viewer'
-import { PromptImproverModal } from '@/components/prompt-improver-modal'
+import { PromptImproverModal } from '@/app/components/prompt-improver-modal'
+import { ContextWindow } from '@/app/components/context-window'
 
 // Mock data for existing chats
 const mockChatData: Record<string, { messages: Array<{ 
@@ -91,6 +92,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [context, setContext] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [showPromptImprover, setShowPromptImprover] = useState(false)
+  const [isContextExpanded, setIsContextExpanded] = useState(false)
+  const [showAddContext, setShowAddContext] = useState(false)
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -155,6 +158,17 @@ export default function ChatPage({ params }: { params: { id: string } }) {
     setError(null)
   }, [])
 
+  const handleContextAdd = (newContextData: any) => {
+    setContext({
+      ...context,
+      companies: [...(context?.companies || []), ...(newContextData.companies || [])],
+      specificDocuments: [...(context?.specificDocuments || []), ...(newContextData.specificDocuments || [])],
+      includeNews: newContextData.includeNews,
+      includeWebAccess: newContextData.includeWebAccess
+    })
+    setShowAddContext(false)
+  }
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -183,79 +197,114 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
         {context && (
           <Card className="mb-4 border-gray-200">
-            <CardContent className="p-4">
-              <div className="flex items-center gap-2 mb-3">
-                <div className="bg-gray-100 p-1.5 rounded-md">
-                  <FileText className="h-4 w-4 text-gray-700" />
-                </div>
-                <h2 className="text-base font-semibold text-gray-900">Research Context</h2>
-              </div>
-              
-              <div className="grid grid-cols-2 gap-3">
-                {/* Companies */}
-                <div className="space-y-1.5">
-                  <h3 className="text-xs font-medium text-gray-700">Companies</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {context.companies?.length > 0 ? (
-                      context.companies.map((company: string) => (
-                        <span 
-                          key={company}
-                          className="inline-flex items-center px-2 py-0.5 rounded-full 
-                                   text-xs bg-gray-100 text-gray-700 border border-gray-200"
-                        >
-                          <Building2 className="h-3 w-3 mr-1" />
-                          {company}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-gray-500">None specified</span>
-                    )}
+            <div className="flex items-center justify-between p-4">
+              <button
+                onClick={() => setIsContextExpanded(!isContextExpanded)}
+                className="flex-1 flex items-center justify-between hover:bg-gray-50/50 rounded-md p-2"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="bg-gray-100 p-1.5 rounded-md">
+                    <FileText className="h-4 w-4 text-gray-700" />
                   </div>
-                </div>
-
-                {/* Documents */}
-                <div className="space-y-1.5">
-                  <h3 className="text-xs font-medium text-gray-700">Documents</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {context.specificDocuments?.length > 0 ? (
-                      context.specificDocuments.map((doc: string) => (
-                        <span 
-                          key={doc}
-                          className="inline-flex items-center px-2 py-0.5 rounded-full 
-                                   text-xs bg-gray-100 text-gray-700 border border-gray-200"
-                        >
-                          <FileText className="h-3 w-3 mr-1" />
-                          {doc}
-                        </span>
-                      ))
-                    ) : (
-                      <span className="text-xs text-gray-500">None specified</span>
-                    )}
-                  </div>
-                </div>
-
-                {/* Additional Context */}
-                <div className="col-span-2 flex gap-3 mt-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <div className={`p-1 rounded-md ${context.includeNews ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                      <Newspaper className="h-3.5 w-3.5" />
+                  <div className="flex items-center gap-2">
+                    <h2 className="text-base font-semibold text-gray-900">Research Context</h2>
+                    <div className="flex items-center gap-2 text-sm text-gray-500">
+                      <span>•</span>
+                      <span>{context.companies?.length || 0} Companies</span>
+                      <span>•</span>
+                      <span>{context.specificDocuments?.length || 0} Documents</span>
                     </div>
-                    <span className="text-xs text-gray-700">
-                      News: <span className="font-medium">{context.includeNews ? 'Yes' : 'No'}</span>
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1.5">
-                    <div className={`p-1 rounded-md ${context.includeWebAccess ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
-                      <Globe className="h-3.5 w-3.5" />
-                    </div>
-                    <span className="text-xs text-gray-700">
-                      Web: <span className="font-medium">{context.includeWebAccess ? 'Yes' : 'No'}</span>
-                    </span>
                   </div>
                 </div>
-              </div>
-            </CardContent>
+                <ChevronRight className={`h-5 w-5 text-gray-400 transition-transform duration-200
+                                      ${isContextExpanded ? 'rotate-90' : ''}`} />
+              </button>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowAddContext(true)}
+                className="ml-4 gap-2"
+              >
+                <Plus className="h-4 w-4" />
+                Add Context
+              </Button>
+            </div>
+
+            {isContextExpanded && (
+              <CardContent className="border-t pt-4">
+                <div className="grid grid-cols-2 gap-3">
+                  {/* Companies */}
+                  <div className="space-y-1.5">
+                    <h3 className="text-xs font-medium text-gray-700">Companies</h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {context.companies?.length > 0 ? (
+                        context.companies.map((company: string) => (
+                          <span 
+                            key={company}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full 
+                                     text-xs bg-gray-100 text-gray-700 border border-gray-200"
+                          >
+                            <Building2 className="h-3 w-3 mr-1" />
+                            {company}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-500">None specified</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Documents */}
+                  <div className="space-y-1.5">
+                    <h3 className="text-xs font-medium text-gray-700">Documents</h3>
+                    <div className="flex flex-wrap gap-1.5">
+                      {context.specificDocuments?.length > 0 ? (
+                        context.specificDocuments.map((doc: string) => (
+                          <span 
+                            key={doc}
+                            className="inline-flex items-center px-2 py-0.5 rounded-full 
+                                     text-xs bg-gray-100 text-gray-700 border border-gray-200"
+                          >
+                            <FileText className="h-3 w-3 mr-1" />
+                            {doc}
+                          </span>
+                        ))
+                      ) : (
+                        <span className="text-xs text-gray-500">None specified</span>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Additional Context */}
+                  <div className="col-span-2 flex gap-3 mt-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <div className={`p-1 rounded-md ${context.includeNews ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        <Newspaper className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="text-xs text-gray-700">
+                        News: <span className="font-medium">{context.includeNews ? 'Yes' : 'No'}</span>
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-1.5">
+                      <div className={`p-1 rounded-md ${context.includeWebAccess ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700'}`}>
+                        <Globe className="h-3.5 w-3.5" />
+                      </div>
+                      <span className="text-xs text-gray-700">
+                        Web: <span className="font-medium">{context.includeWebAccess ? 'Yes' : 'No'}</span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            )}
+
+            <ContextWindow
+              isOpen={showAddContext}
+              onClose={() => setShowAddContext(false)}
+              onComplete={handleContextAdd}
+            />
           </Card>
         )}
 

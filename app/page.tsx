@@ -12,9 +12,21 @@ import {
   Clock,
   ChevronRight,
   MessageSquare, 
-  BookOpen
+  BookOpen,
+  Search,
+  CalendarIcon,
+  PlayCircle
 } from 'lucide-react'
 import { NewResearchModal } from "@/app/components/new-research-modal"
+import { Input } from "@/components/ui/input"
+import { useState } from 'react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 
 // Enhanced mock data with more diverse examples
 const mockChatData = {
@@ -102,6 +114,37 @@ const getCategoryIcon = (type: 'Chat' | 'Playbook') => {
 export default function HomePage() {
   const router = useRouter()
 
+  const [searchQuery, setSearchQuery] = useState('')
+  const [filterType, setFilterType] = useState<'all' | 'company' | 'date' | 'name'>('all')
+  const [showTutorial, setShowTutorial] = useState(false)
+
+  const filteredChats = Object.entries(mockChatData).filter(([_, chat]) => {
+    const query = searchQuery.toLowerCase()
+    
+    switch (filterType) {
+      case 'company':
+        return chat.context.companies.some(company => 
+          company.toLowerCase().includes(query)
+        )
+      case 'date':
+        return formatDate(chat.context.timestamp).toLowerCase().includes(query)
+      case 'name':
+        return chat.messages[0].content.toLowerCase().includes(query)
+      case 'all':
+      default:
+        return (
+          chat.messages[0].content.toLowerCase().includes(query) ||
+          chat.context.companies.some(company => 
+            company.toLowerCase().includes(query)
+          ) ||
+          chat.context.specificDocuments.some(doc => 
+            doc.toLowerCase().includes(query)
+          ) ||
+          formatDate(chat.context.timestamp).toLowerCase().includes(query)
+        )
+    }
+  })
+
   const startNewChat = () => {
     const defaultContext = {
       companies: [],
@@ -131,7 +174,18 @@ export default function HomePage() {
                 AI-powered investment research assistant
               </p>
             </div>
-            <NewResearchModal />
+            <div className="flex items-center gap-3">
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => setShowTutorial(true)}
+                className="text-gray-600 gap-2"
+              >
+                <PlayCircle className="h-4 w-4" />
+                See Tutorial
+              </Button>
+              <NewResearchModal />
+            </div>
           </div>
         </div>
       </div>
@@ -145,17 +199,44 @@ export default function HomePage() {
             </div>
             <h2 className="text-2xl font-semibold text-gray-800">Recent Research</h2>
           </div>
-          <Button 
-            variant="ghost" 
-            className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
-            onClick={handleViewAllClick}
-          >
-            View All <ChevronRight className="h-4 w-4 ml-1" />
-          </Button>
+          <div className="flex items-center gap-4">
+            <div className="flex items-center gap-3 w-[500px]">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Find research..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 w-full"
+                />
+              </div>
+              <Select
+                value={filterType}
+                onValueChange={(value: 'all' | 'company' | 'date' | 'name') => setFilterType(value)}
+              >
+                <SelectTrigger className="w-[140px]">
+                  <SelectValue placeholder="Filter by..." />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All</SelectItem>
+                  <SelectItem value="company">Company</SelectItem>
+                  <SelectItem value="date">Date</SelectItem>
+                  <SelectItem value="name">Name</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <Button 
+              variant="ghost" 
+              className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
+              onClick={handleViewAllClick}
+            >
+              View All <ChevronRight className="h-4 w-4 ml-1" />
+            </Button>
+          </div>
         </div>
         
         <div className="grid grid-cols-1 gap-6">
-          {Object.entries(mockChatData).map(([id, chat]) => (
+          {filteredChats.map(([id, chat]) => (
             <Card 
               key={id}
               className="group hover:shadow-lg transition-all duration-200 border-0 shadow-sm overflow-hidden"
@@ -248,6 +329,22 @@ export default function HomePage() {
               </button>
             </Card>
           ))}
+
+          {/* No Results State */}
+          {filteredChats.length === 0 && (
+            <div className="text-center py-12">
+              <div className="bg-gray-100 rounded-full p-3 w-12 h-12 mx-auto mb-4 flex items-center justify-center">
+                <Search className="h-6 w-6 text-gray-500" />
+              </div>
+              <h3 className="text-lg font-medium text-gray-900 mb-1">No results found</h3>
+              <p className="text-gray-500">
+                {filterType === 'all' 
+                  ? 'Try adjusting your search terms or browse all research'
+                  : `No matches found when filtering by ${filterType}. Try a different filter or search term`
+                }
+              </p>
+            </div>
+          )}
         </div>
       </div>
     </div>

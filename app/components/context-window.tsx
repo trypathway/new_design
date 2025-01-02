@@ -562,18 +562,18 @@ export function ContextWindow({ isOpen, onClose, onComplete }: ContextWindowProp
                                 >
                                   <X className="h-4 w-4" />
                                 </button>
-                              </div>
-                            ))}
+                </div>
+              ))}
                           </div>
                         )}
-                      </div>
+          </div>
 
                       {/* URL Input Section */}
                       <div>
                         <h4 className="text-lg font-medium text-gray-900 mb-4">Add URLs</h4>
-                        <div className="space-y-4">
+          <div className="space-y-4">
                           <div className="flex gap-2">
-                            <Input
+            <Input
                               placeholder="Paste URL here..."
                               value={urlInput}
                               onChange={(e) => setUrlInput(e.target.value)}
@@ -660,9 +660,9 @@ export function ContextWindow({ isOpen, onClose, onComplete }: ContextWindowProp
                         includeNews ? 'text-emerald-600' : 'text-gray-500'
                       }`}>
                         {includeNews ? 'News articles will be included' : 'News articles will not be included'}
-                      </p>
-                    </div>
-                  </div>
+            </p>
+          </div>
+          </div>
                   <Switch 
                     checked={includeNews}
                     className={`${includeNews ? 'bg-emerald-500' : ''}`}
