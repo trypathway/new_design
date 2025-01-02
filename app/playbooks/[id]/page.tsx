@@ -342,7 +342,7 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                        hover:border-gray-700"
               onClick={() => {
                 // Handle starting the playbook
-                router.push(`/playbooks/${params.id}/run${context ? `?context=${encodeURIComponent(JSON.stringify(context))}` : ''}`)
+                router.push(`/chat/new${context ? `?context=${encodeURIComponent(JSON.stringify(context))}` : ''}`)
               }}
             >
               <PlayCircle className="h-5 w-5" />
