@@ -184,6 +184,14 @@ export default function HomePage() {
                 <PlayCircle className="h-4 w-4" />
                 See Tutorial
               </Button>
+              <Button 
+                variant="outline"
+                onClick={() => router.push('/playbooks')}
+                className="gap-2"
+              >
+                <BookOpen className="h-4 w-4" />
+                Playbook Manager
+              </Button>
               <NewResearchModal />
             </div>
           </div>
