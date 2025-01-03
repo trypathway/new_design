@@ -15,7 +15,8 @@ import {
   BookOpen,
   Search,
   CalendarIcon,
-  PlayCircle
+  PlayCircle,
+  Calendar
 } from 'lucide-react'
 import { NewResearchModal } from "@/app/components/new-research-modal"
 import { Input } from "@/components/ui/input"
@@ -27,6 +28,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem } from "@/components/ui/command"
 
 // Enhanced mock data with more diverse examples
 const mockChatData = {
@@ -111,38 +116,43 @@ const getCategoryIcon = (type: string) => {
   }
 }
 
+// Mock companies for autocomplete
+const companies = [
+  'Apple',
+  'Microsoft',
+  'Google',
+  'Amazon',
+  'Tesla',
+  'NVIDIA',
+  // Add more...
+]
+
 export default function HomePage() {
   const router = useRouter()
 
   const [searchQuery, setSearchQuery] = useState('')
-  const [filterType, setFilterType] = useState<'all' | 'company' | 'date' | 'name'>('all')
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined
+    to: Date | undefined
+  }>({
+    from: undefined,
+    to: undefined
+  })
   const [showTutorial, setShowTutorial] = useState(false)
 
   const filteredChats = Object.entries(mockChatData).filter(([_, chat]) => {
     const query = searchQuery.toLowerCase()
-    
-    switch (filterType) {
-      case 'company':
-        return chat.context.companies.some(company => 
-          company.toLowerCase().includes(query)
-        )
-      case 'date':
-        return formatDate(chat.context.timestamp).toLowerCase().includes(query)
-      case 'name':
-        return chat.messages[0].content.toLowerCase().includes(query)
-      case 'all':
-      default:
-        return (
-          chat.messages[0].content.toLowerCase().includes(query) ||
-          chat.context.companies.some(company => 
-            company.toLowerCase().includes(query)
-          ) ||
-          chat.context.specificDocuments.some(doc => 
-            doc.toLowerCase().includes(query)
-          ) ||
-          formatDate(chat.context.timestamp).toLowerCase().includes(query)
-        )
-    }
+    return (
+      chat.messages[0].content.toLowerCase().includes(query) ||
+      chat.context.companies.some(company => 
+        company.toLowerCase().includes(query)
+      ) ||
+      chat.context.specificDocuments.some(doc => 
+        doc.toLowerCase().includes(query)
+      ) ||
+      formatDate(chat.context.timestamp).toLowerCase().includes(query)
+    )
   })
 
   const startNewChat = () => {
@@ -200,39 +210,96 @@ export default function HomePage() {
 
       {/* Main Content */}
       <div className="container mx-auto max-w-7xl px-8 py-12">
-        <div className="flex items-center justify-between mb-8">
+        {/* Header and Filters */}
+        <div className="flex flex-col gap-6 mb-8">
+          {/* Header */}
           <div className="flex items-center gap-3">
             <div className="bg-gray-100 p-2 rounded-lg">
               <History className="h-6 w-6 text-gray-900" />
             </div>
             <h2 className="text-2xl font-semibold text-gray-800">Recent Research</h2>
           </div>
+
+          {/* Filters */}
           <div className="flex items-center gap-4">
-            <div className="flex items-center gap-3 w-[500px]">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Find research..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 w-full"
-                />
-              </div>
-              <Select
-                value={filterType}
-                onValueChange={(value: 'all' | 'company' | 'date' | 'name') => setFilterType(value)}
-              >
-                <SelectTrigger className="w-[140px]">
-                  <SelectValue placeholder="Filter by..." />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All</SelectItem>
-                  <SelectItem value="company">Company</SelectItem>
-                  <SelectItem value="date">Date</SelectItem>
-                  <SelectItem value="name">Name</SelectItem>
-                </SelectContent>
-              </Select>
+            {/* Date Range Filter */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className={`w-[250px] justify-start text-left font-normal ${
+                    !dateRange.from && !dateRange.to && "text-muted-foreground"
+                  }`}
+                >
+                  <Calendar className="mr-2 h-4 w-4" />
+                  {dateRange.from ? (
+                    dateRange.to ? (
+                      <>
+                        {format(dateRange.from, "MMM d, yyyy")} -{" "}
+                        {format(dateRange.to, "MMM d, yyyy")}
+                      </>
+                    ) : (
+                      format(dateRange.from, "MMM d, yyyy")
+                    )
+                  ) : (
+                    "Select date range"
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-4" align="start">
+                <div className="space-y-4">
+                  <div className="flex gap-2">
+                    <select
+                      value={dateRange.from?.getFullYear() || new Date().getFullYear()}
+                      onChange={(e) => {
+                        const year = parseInt(e.target.value)
+                        setDateRange(prev => ({
+                          from: prev.from ? new Date(year, prev.from.getMonth(), prev.from.getDate()) : undefined,
+                          to: prev.to ? new Date(year, prev.to.getMonth(), prev.to.getDate()) : undefined
+                        }))
+                      }}
+                      className="flex-1 p-2 text-sm border rounded-md"
+                    >
+                      {Array.from({ length: 5 }, (_, i) => 2020 + i).map(year => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <CalendarComponent
+                    initialFocus
+                    mode="range"
+                    defaultMonth={dateRange.from}
+                    selected={dateRange}
+                    onSelect={setDateRange}
+                    numberOfMonths={2}
+                    className="rounded-md border"
+                  />
+                </div>
+              </PopoverContent>
+            </Popover>
+
+            {/* Company Filter */}
+            <div className="relative w-[200px]">
+              <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search company..."
+                value={selectedCompany || ""}
+                onChange={(e) => setSelectedCompany(e.target.value)}
+                className="pl-9"
+              />
             </div>
+
+            {/* Search Box */}
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Find research..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+
             <Button 
               variant="ghost" 
               className="text-gray-600 hover:text-gray-900 hover:bg-gray-100"
@@ -243,6 +310,7 @@ export default function HomePage() {
           </div>
         </div>
         
+        {/* Research Results */}
         <div className="grid grid-cols-1 gap-6">
           {filteredChats.map(([id, chat]) => (
             <Card 
@@ -346,10 +414,7 @@ export default function HomePage() {
               </div>
               <h3 className="text-lg font-medium text-gray-900 mb-1">No results found</h3>
               <p className="text-gray-500">
-                {filterType === 'all' 
-                  ? 'Try adjusting your search terms or browse all research'
-                  : `No matches found when filtering by ${filterType}. Try a different filter or search term`
-                }
+                Try adjusting your search terms or browse all research
               </p>
             </div>
           )}

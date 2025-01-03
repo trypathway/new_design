@@ -8,8 +8,16 @@ import {
   History,
   MessageSquare,
   BookOpen,
-  ArrowLeft
+  ArrowLeft,
+  Calendar,
+  Building2,
+  Search
 } from 'lucide-react'
+import { Input } from "@/components/ui/input"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
+import { format } from "date-fns"
+import { useState } from 'react'
 
 // Use the same mock data structure as homepage
 const chatHistory = {
@@ -117,13 +125,36 @@ const getCategoryIcon = (type: string) => {
 
 export default function ChatHistoryPage() {
   const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedCompany, setSelectedCompany] = useState<string | null>(null)
+  const [dateRange, setDateRange] = useState<{
+    from: Date | undefined
+    to: Date | undefined
+  }>({
+    from: undefined,
+    to: undefined
+  })
+
+  const filteredChats = Object.entries(chatHistory).filter(([_, chat]) => {
+    const query = searchQuery.toLowerCase()
+    return (
+      chat.messages[0].content.toLowerCase().includes(query) ||
+      chat.context.companies.some(company => 
+        company.toLowerCase().includes(query)
+      ) ||
+      chat.context.specificDocuments.some(doc => 
+        doc.toLowerCase().includes(query)
+      ) ||
+      formatDate(chat.context.timestamp).toLowerCase().includes(query)
+    )
+  })
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Header */}
       <div className="bg-white border-b border-gray-100">
         <div className="container mx-auto max-w-7xl px-8 py-6">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-6">
             <div className="flex items-center gap-4">
               <Button
                 variant="ghost"
@@ -140,6 +171,87 @@ export default function ChatHistoryPage() {
                 </h1>
               </div>
             </div>
+
+            {/* Add Filters */}
+            <div className="flex items-center gap-4">
+              {/* Date Range Filter */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className={`w-[250px] justify-start text-left font-normal ${
+                      !dateRange.from && !dateRange.to && "text-muted-foreground"
+                    }`}
+                  >
+                    <Calendar className="mr-2 h-4 w-4" />
+                    {dateRange.from ? (
+                      dateRange.to ? (
+                        <>
+                          {format(dateRange.from, "MMM d, yyyy")} -{" "}
+                          {format(dateRange.to, "MMM d, yyyy")}
+                        </>
+                      ) : (
+                        format(dateRange.from, "MMM d, yyyy")
+                      )
+                    ) : (
+                      "Select date range"
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-4" align="start">
+                  <div className="space-y-4">
+                    <div className="flex gap-2">
+                      <select
+                        value={dateRange.from?.getFullYear() || new Date().getFullYear()}
+                        onChange={(e) => {
+                          const year = parseInt(e.target.value)
+                          setDateRange(prev => ({
+                            from: prev.from ? new Date(year, prev.from.getMonth(), prev.from.getDate()) : undefined,
+                            to: prev.to ? new Date(year, prev.to.getMonth(), prev.to.getDate()) : undefined
+                          }))
+                        }}
+                        className="flex-1 p-2 text-sm border rounded-md"
+                      >
+                        {Array.from({ length: 5 }, (_, i) => 2020 + i).map(year => (
+                          <option key={year} value={year}>{year}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <CalendarComponent
+                      initialFocus
+                      mode="range"
+                      defaultMonth={dateRange.from}
+                      selected={dateRange}
+                      onSelect={setDateRange}
+                      numberOfMonths={2}
+                      className="rounded-md border"
+                    />
+                  </div>
+                </PopoverContent>
+              </Popover>
+
+              {/* Company Filter */}
+              <div className="relative w-[200px]">
+                <Building2 className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Search company..."
+                  value={selectedCompany || ""}
+                  onChange={(e) => setSelectedCompany(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+
+              {/* Search Box */}
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <Input
+                  placeholder="Find research..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9"
+                />
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -147,7 +259,7 @@ export default function ChatHistoryPage() {
       {/* Main Content */}
       <div className="container mx-auto max-w-7xl px-8 py-12">
         <div className="grid grid-cols-1 gap-6">
-          {Object.entries(chatHistory).map(([id, chat]) => (
+          {filteredChats.map(([id, chat]) => (
             <Card 
               key={id}
               className={`group hover:shadow-lg transition-all duration-200 border-0 shadow-sm overflow-hidden cursor-pointer
