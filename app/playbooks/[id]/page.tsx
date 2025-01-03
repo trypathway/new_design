@@ -23,7 +23,7 @@ import {
   ChevronUp
 } from 'lucide-react'
 import { BackToStartButton } from '@/components/back-to-start-button'
-import { PromptImproverModal } from '@/components/prompt-improver-modal'
+import { PromptImproverModal } from '@/app/components/prompt-improver-modal'
 
 // Mock playbook data
 const MOCK_PLAYBOOKS = {
