@@ -6,13 +6,14 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { ScrollArea } from "@/components/ui/scroll-area"
-import { SendHorizontal, User, Bot, X, Wand2, FileText, Building2, Newspaper, Globe, ChevronRight, Plus } from 'lucide-react'
+import { SendHorizontal, User, Bot, X, Wand2, FileText, Building2, Newspaper, Globe, ChevronRight, Plus, FileDown } from 'lucide-react'
 import { BackToStartButton } from '@/components/back-to-start-button'
 import { PDFViewer } from '@/components/pdf-viewer'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { LogViewer } from '@/components/log-viewer'
 import { PromptImproverModal } from '@/app/components/prompt-improver-modal'
 import { ContextWindow } from '@/app/components/context-window'
+import { toast } from "@/components/ui/use-toast"
 
 // Mock data for existing chats
 const mockChatData: Record<string, { messages: Array<{ 
@@ -75,6 +76,19 @@ const mockPDFData = {
   }
 }
 
+const generateFollowUpQuestions = (message: string) => {
+  // This will be replaced with actual AI-generated questions
+  // For now, using mock questions based on context
+  return [
+    "Can you provide more detailed financial metrics?",
+    "How does this compare to industry competitors?",
+    "What are the key risk factors to consider?",
+    "What's the growth potential in the next 5 years?",
+    "How might market trends affect this analysis?",
+    "What regulatory factors should we consider?"
+  ]
+}
+
 export default function ChatPage({ params }: { params: { id: string } }) {
   const [messages, setMessages] = useState<Array<{
     role: 'user' | 'assistant',
@@ -94,6 +108,7 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   const [showPromptImprover, setShowPromptImprover] = useState(false)
   const [isContextExpanded, setIsContextExpanded] = useState(false)
   const [showAddContext, setShowAddContext] = useState(false)
+  const [chatTitle, setChatTitle] = useState<string>('')
   const searchParams = useSearchParams()
 
   useEffect(() => {
@@ -133,6 +148,18 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
     loadData()
   }, [params.id, searchParams])
+
+  useEffect(() => {
+    if (params.id === 'new') {
+      setChatTitle('New Research')
+    } else {
+      // Get title from first message of chat
+      const chat = mockChatData[params.id]
+      if (chat) {
+        setChatTitle(chat.messages[0].content)
+      }
+    }
+  }, [params.id])
 
   const handleSend = useCallback(() => {
     if (input.trim()) {
@@ -180,11 +207,30 @@ export default function ChatPage({ params }: { params: { id: string } }) {
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6 flex flex-col min-h-screen">
-        <BackToStartButton />
-        
-        <h1 className="text-3xl font-bold mb-6 mt-12">
-          Research Chat {params.id === 'new' ? '(New)' : `#${params.id}`}
-        </h1>
+        <div className="mb-12">
+          <BackToStartButton />
+        </div>
+
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-2xl font-semibold text-gray-900">
+            {params.id === 'new' ? 'New Research' : chatTitle}
+          </h1>
+          <Button
+            size="lg"
+            className="bg-gray-900 hover:bg-gray-800 text-white shadow-md hover:shadow-lg
+                       transition-all duration-200 gap-2 h-11"
+            onClick={() => {
+              toast({
+                title: "Coming Soon!",
+                description: "Report generation feature is under development.",
+                duration: 3000,
+              })
+            }}
+          >
+            <FileDown className="h-5 w-5" />
+            Convert to Report
+          </Button>
+        </div>
 
         {error && (
           <div className="bg-destructive/15 text-destructive px-4 py-3 rounded mb-4 flex justify-between items-center" role="alert">
@@ -310,45 +356,70 @@ export default function ChatPage({ params }: { params: { id: string } }) {
 
         <div className={`flex ${selectedCitation ? 'space-x-4' : ''} flex-grow`}>
           <Card className={`flex-grow flex flex-col ${selectedCitation ? 'w-1/2' : 'w-full'}`}>
-            <ScrollArea className="flex-grow p-4">
-              {messages.map((message, index) => (
-                <div key={index} className={`flex items-start mb-4 ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex items-start space-x-2 ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'} rounded-lg p-3 max-w-[70%]`}>
-                    {message.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
-                    <div className="space-y-1">
-                      <p className="text-sm leading-relaxed">
-                        {message.content.split(/(\[[0-9]+\])/).map((part, i) => {
-                          if (part.match(/\[[0-9]+\]/)) {
-                            const citationId = part.slice(1, -1);
-                            const citation = message.citations?.find(c => c.id === citationId);
-                            return citation ? (
-                              <button
-                                key={i}
-                                className="text-blue-600 hover:underline"
-                                onClick={() => handleCitationClick(citation)}
-                              >
-                                {part}
-                              </button>
-                            ) : part;
-                          }
-                          return part;
-                        })}
-                      </p>
+            <div className="flex-grow flex flex-col overflow-hidden">
+              {/* Messages ScrollArea */}
+              <ScrollArea className="flex-grow p-4">
+                {messages.map((message, index) => (
+                  <div key={index} className={`flex gap-4 p-4 ${
+                    message.role === 'assistant' 
+                      ? 'bg-gray-50 border-y border-gray-100' 
+                      : ''
+                  }`}>
+                    <div className={`flex items-start space-x-2 ${message.role === 'user' ? 'bg-primary text-primary-foreground' : 'bg-muted'} rounded-lg p-3 max-w-[70%]`}>
+                      {message.role === 'user' ? <User className="h-5 w-5" /> : <Bot className="h-5 w-5" />}
+                      <div className="space-y-1">
+                        <p className="text-sm leading-relaxed">
+                          {message.content.split(/(\[[0-9]+\])/).map((part, i) => {
+                            if (part.match(/\[[0-9]+\]/)) {
+                              const citationId = part.slice(1, -1);
+                              const citation = message.citations?.find(c => c.id === citationId);
+                              return citation ? (
+                                <button
+                                  key={i}
+                                  className="text-blue-600 hover:underline"
+                                  onClick={() => handleCitationClick(citation)}
+                                >
+                                  {part}
+                                </button>
+                              ) : part;
+                            }
+                            return part;
+                          })}
+                        </p>
+                      </div>
                     </div>
                   </div>
+                ))}
+              </ScrollArea>
+
+              {/* Follow-up Questions Section */}
+              {messages.length > 0 && messages[messages.length - 1].role === 'assistant' && (
+                <div className="border-t border-gray-100 bg-gray-50/50 px-4 py-3">
+                  <div className="grid grid-cols-3 gap-2">
+                    {generateFollowUpQuestions(messages[messages.length - 1].content).map((question, index) => (
+                      <Button
+                        key={index}
+                        variant="outline"
+                        size="sm"
+                        className="bg-white hover:bg-gray-50 text-xs text-gray-700 
+                                 border border-gray-200 shadow-sm h-7 w-full"
+                        onClick={() => {
+                          setInput(question)
+                          if (inputRef.current) {
+                            inputRef.current.focus()
+                          }
+                        }}
+                      >
+                        {question}
+                      </Button>
+                    ))}
+                  </div>
                 </div>
-              ))}
-            </ScrollArea>
-            
-            <CardContent className="border-t p-4">
-              <form 
-                onSubmit={(e) => {
-                  e.preventDefault()
-                  handleSend()
-                }}
-                className="flex items-center space-x-2"
-              >
-                <div className="flex items-center gap-2 w-full">
+              )}
+
+              {/* Input Section */}
+              <div className="border-t border-gray-200 p-4">
+                <div className="flex gap-2">
                   <Input
                     placeholder="Type your message..."
                     value={input}
@@ -372,8 +443,8 @@ export default function ChatPage({ params }: { params: { id: string } }) {
                     <SendHorizontal className="h-4 w-4" />
                   </Button>
                 </div>
-              </form>
-            </CardContent>
+              </div>
+            </div>
           </Card>
 
           {selectedCitation && (

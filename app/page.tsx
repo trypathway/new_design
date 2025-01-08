@@ -16,7 +16,8 @@ import {
   Search,
   CalendarIcon,
   PlayCircle,
-  Calendar
+  Calendar,
+  Settings
 } from 'lucide-react'
 import { NewResearchModal } from "@/app/components/new-research-modal"
 import { Input } from "@/components/ui/input"
@@ -174,35 +175,44 @@ export default function HomePage() {
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
       {/* Hero Section */}
       <div className="bg-white border-b border-gray-100">
-        <div className="container mx-auto max-w-7xl px-8 py-12">
+        <div className="container mx-auto max-w-7xl px-8 py-6">
           <div className="flex justify-between items-center">
             <div>
-              <h1 className="text-4xl font-bold text-gray-900">
+              <h1 className="text-2xl font-bold text-gray-900">
                 Quantly
               </h1>
-              <p className="text-gray-500 text-lg">
+              <p className="text-gray-500 text-base">
                 AI-powered investment research assistant
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <Button 
                 variant="outline" 
                 size="sm"
                 onClick={() => setShowTutorial(true)}
-                className="text-gray-600 gap-2"
+                className="text-gray-600 gap-1.5 text-sm h-8"
               >
-                <PlayCircle className="h-4 w-4" />
+                <PlayCircle className="h-3.5 w-3.5" />
                 See Tutorial
               </Button>
               <Button 
                 variant="outline"
+                size="sm"
                 onClick={() => router.push('/playbooks')}
-                className="gap-2"
+                className="gap-1.5 text-sm h-8"
               >
-                <BookOpen className="h-4 w-4" />
+                <BookOpen className="h-3.5 w-3.5" />
                 Playbook Manager
               </Button>
-              <NewResearchModal />
+              <Button 
+                variant="outline"
+                size="sm"
+                onClick={() => router.push('/settings')}
+                className="text-gray-600 gap-1.5 text-sm h-8"
+              >
+                <Settings className="h-3.5 w-3.5" />
+                Settings
+              </Button>
             </div>
           </div>
         </div>
@@ -211,13 +221,22 @@ export default function HomePage() {
       {/* Main Content */}
       <div className="container mx-auto max-w-7xl px-8 py-12">
         {/* Header and Filters */}
-        <div className="flex flex-col gap-6 mb-8">
+        <div className="flex flex-col gap-6">
           {/* Header */}
-          <div className="flex items-center gap-3">
-            <div className="bg-gray-100 p-2 rounded-lg">
-              <History className="h-6 w-6 text-gray-900" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="bg-gray-100 p-2 rounded-lg">
+                <History className="h-6 w-6 text-gray-900" />
+              </div>
+              <h2 className="text-2xl font-semibold text-gray-800">Recent Research</h2>
             </div>
-            <h2 className="text-2xl font-semibold text-gray-800">Recent Research</h2>
+            
+            <NewResearchModal 
+              buttonProps={{
+                size: "lg",
+                className: "bg-gray-900 hover:bg-gray-800 text-white px-8 h-12 shadow-md hover:shadow-lg transition-all duration-200"
+              }}
+            />
           </div>
 
           {/* Filters */}

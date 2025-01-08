@@ -2,12 +2,16 @@
 
 import { useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
+import { Button, type ButtonProps } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { MessageSquare, BookOpen, PlusCircle } from 'lucide-react'
 import { ContextWindow } from '@/app/components/context-window'
 
-export function NewResearchModal() {
+interface NewResearchModalProps {
+  buttonProps?: Partial<ButtonProps>
+}
+
+export function NewResearchModal({ buttonProps }: NewResearchModalProps) {
   const [open, setOpen] = useState(false)
   const [showContext, setShowContext] = useState(false)
   const [context, setContext] = useState<any>(null)
@@ -38,8 +42,12 @@ export function NewResearchModal() {
 
   return (
     <>
-      <Button onClick={handleNewResearchClick}>
-        <PlusCircle className="mr-2 h-4 w-4" /> New Research
+      <Button 
+        onClick={handleNewResearchClick}
+        {...buttonProps}
+      >
+        <PlusCircle className="mr-2 h-5 w-5" />
+        New Research
       </Button>
       <ContextWindow 
         isOpen={showContext} 
