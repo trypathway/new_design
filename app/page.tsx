@@ -1,15 +1,15 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useChats } from "./hooks/useChats";
-import { ChatList } from "./components/chat-list";
-import { ChatFilters } from "./components/chat-filters";
+import { useChats } from "../hooks/useChats";
+import { ChatList } from "../components/chat-list";
+import { ChatFilters } from "../components/chat-filters";
 import { Button } from "@/components/ui/button";
 import { useAuth0 } from "@auth0/auth0-react";
-import { ProtectedRoute } from "./components/protected-route";
+import { ProtectedRoute } from "../components/protected-route";
 import { useRouter } from "next/navigation";
 import { History, PlayCircle, BookOpen, Settings } from "lucide-react";
-import { NewResearchModal } from "@/app/components/new-research-modal";
+import { NewResearchModal } from "@/components/new-research-modal";
 
 export default function Home() {
   const router = useRouter();

@@ -1,96 +1,97 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { 
-  BookOpen, 
-  Plus, 
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import {
+  BookOpen,
+  Plus,
   Search,
   ArrowLeft,
   Edit,
   Copy,
-  Trash2
-} from 'lucide-react'
-import { PlaybookEditorModal } from '@/app/components/playbook-editor-modal'
-import { PlaybookCreatorModal } from '@/app/components/playbook-creator-modal'
+  Trash2,
+} from "lucide-react";
+import { PlaybookEditorModal } from "@/components/playbook-editor-modal";
+import { PlaybookCreatorModal } from "@/components/playbook-creator-modal";
 
 // Mock playbook data
 const mockPlaybooks = [
   {
-    id: '1',
-    name: 'Earnings Analysis',
-    description: 'Standard template for analyzing quarterly earnings reports',
+    id: "1",
+    name: "Earnings Analysis",
+    description: "Standard template for analyzing quarterly earnings reports",
     steps: [
-      'Review key financial metrics',
-      'Analyze year-over-year growth',
-      'Check guidance and forecasts'
+      "Review key financial metrics",
+      "Analyze year-over-year growth",
+      "Check guidance and forecasts",
     ],
-    lastModified: '2024-01-15T10:00:00Z'
+    lastModified: "2024-01-15T10:00:00Z",
   },
   {
-    id: '2',
-    name: 'Competitor Analysis',
-    description: 'Framework for comparing companies in the same industry',
+    id: "2",
+    name: "Competitor Analysis",
+    description: "Framework for comparing companies in the same industry",
     steps: [
-      'Market share analysis',
-      'Product comparison',
-      'Financial metrics comparison'
+      "Market share analysis",
+      "Product comparison",
+      "Financial metrics comparison",
     ],
-    lastModified: '2024-01-14T15:30:00Z'
-  }
-]
+    lastModified: "2024-01-14T15:30:00Z",
+  },
+];
 
 export default function PlaybooksPage() {
-  const router = useRouter()
-  const [searchQuery, setSearchQuery] = useState('')
-  const [showEditor, setShowEditor] = useState(false)
-  const [editingPlaybook, setEditingPlaybook] = useState<any>(null)
-  const [showCreator, setShowCreator] = useState(false)
+  const router = useRouter();
+  const [searchQuery, setSearchQuery] = useState("");
+  const [showEditor, setShowEditor] = useState(false);
+  const [editingPlaybook, setEditingPlaybook] = useState<any>(null);
+  const [showCreator, setShowCreator] = useState(false);
 
-  const filteredPlaybooks = mockPlaybooks.filter(playbook =>
-    playbook.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    playbook.description.toLowerCase().includes(searchQuery.toLowerCase())
-  )
+  const filteredPlaybooks = mockPlaybooks.filter(
+    (playbook) =>
+      playbook.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      playbook.description.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   const handleEdit = (playbook: any) => {
-    setEditingPlaybook(playbook)
-    setShowEditor(true)
-  }
+    setEditingPlaybook(playbook);
+    setShowEditor(true);
+  };
 
   const handleSave = (updatedPlaybook: any) => {
     // Handle save logic here
-    setShowEditor(false)
-    setEditingPlaybook(null)
-  }
+    setShowEditor(false);
+    setEditingPlaybook(null);
+  };
 
   const handleManualCreate = (name: string, purpose: string) => {
-    setShowCreator(false)
+    setShowCreator(false);
     setEditingPlaybook({
       name,
       description: purpose,
-      steps: ['']
-    })
-    setShowEditor(true)
-  }
+      steps: [""],
+    });
+    setShowEditor(true);
+  };
 
   const handleAutoDraft = (name: string, purpose: string) => {
     // Here we would call AI to generate steps
     // For now, using mock data
-    setShowCreator(false)
+    setShowCreator(false);
     setEditingPlaybook({
       name,
       description: purpose,
       steps: [
-        'Step 1: Initial research',
-        'Step 2: Data analysis',
-        'Step 3: Final review'
-      ]
-    })
-    setShowEditor(true)
-  }
+        "Step 1: Initial research",
+        "Step 2: Data analysis",
+        "Step 3: Final review",
+      ],
+    });
+    setShowEditor(true);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white">
@@ -102,7 +103,7 @@ export default function PlaybooksPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                onClick={() => router.push('/')}
+                onClick={() => router.push("/")}
                 className="hover:bg-gray-100"
               >
                 <ArrowLeft className="h-5 w-5" />
@@ -114,10 +115,7 @@ export default function PlaybooksPage() {
                 </h1>
               </div>
             </div>
-            <Button 
-              onClick={() => setShowCreator(true)} 
-              className="gap-2"
-            >
+            <Button onClick={() => setShowCreator(true)} className="gap-2">
               <Plus className="h-4 w-4" />
               New Playbook
             </Button>
@@ -158,8 +156,8 @@ export default function PlaybooksPage() {
                     variant="outline"
                     size="sm"
                     onClick={(e) => {
-                      e.stopPropagation()
-                      router.push(`/playbooks/${playbook.id}`)
+                      e.stopPropagation();
+                      router.push(`/playbooks/${playbook.id}`);
                     }}
                     className="gap-2"
                   >
@@ -171,7 +169,7 @@ export default function PlaybooksPage() {
                     size="icon"
                     className="text-red-500 hover:text-red-600"
                     onClick={(e) => {
-                      e.stopPropagation()
+                      e.stopPropagation();
                       // Handle delete
                     }}
                   >
@@ -184,7 +182,10 @@ export default function PlaybooksPage() {
                 <h4 className="text-sm font-medium text-gray-700">Steps:</h4>
                 <ul className="space-y-1">
                   {playbook.steps.map((step, index) => (
-                    <li key={index} className="text-sm text-gray-600 flex items-center gap-2">
+                    <li
+                      key={index}
+                      className="text-sm text-gray-600 flex items-center gap-2"
+                    >
                       <span className="w-5 h-5 rounded-full bg-gray-100 flex items-center justify-center text-xs text-gray-600">
                         {index + 1}
                       </span>
@@ -195,8 +196,8 @@ export default function PlaybooksPage() {
               </div>
 
               <div className="pt-4 border-t">
-                <Button 
-                  variant="outline" 
+                <Button
+                  variant="outline"
                   className="w-full"
                   onClick={() => router.push(`/playbooks/${playbook.id}`)}
                 >
@@ -211,8 +212,8 @@ export default function PlaybooksPage() {
       <PlaybookEditorModal
         isOpen={showEditor}
         onClose={() => {
-          setShowEditor(false)
-          setEditingPlaybook(null)
+          setShowEditor(false);
+          setEditingPlaybook(null);
         }}
         onSave={handleSave}
         initialPlaybook={editingPlaybook}
@@ -225,6 +226,5 @@ export default function PlaybooksPage() {
         onAutoDraft={handleAutoDraft}
       />
     </div>
-  )
+  );
 }
-

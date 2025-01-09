@@ -1,17 +1,17 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { 
-  FileText, 
-  Building2, 
-  Newspaper, 
-  Globe, 
+import { useState, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  FileText,
+  Building2,
+  Newspaper,
+  Globe,
   GripVertical,
   Plus,
   X,
@@ -20,10 +20,10 @@ import {
   PlayCircle,
   Wand2,
   ChevronDown,
-  ChevronUp
-} from 'lucide-react'
-import { BackToStartButton } from '@/components/back-to-start-button'
-import { PromptImproverModal } from '@/app/components/prompt-improver-modal'
+  ChevronUp,
+} from "lucide-react";
+import { BackToStartButton } from "@/components/back-to-start-button";
+import { PromptImproverModal } from "@/components/prompt-improver-modal";
 
 // Mock playbook data
 const MOCK_PLAYBOOKS = {
@@ -32,99 +32,109 @@ const MOCK_PLAYBOOKS = {
     description: "Analyze company financials and market position",
     steps: [
       {
-        id: '1',
-        title: 'Financial Overview',
-        description: 'Review key financial metrics and ratios',
-        prompt: 'Analyze the company\'s key financial metrics including revenue growth, profit margins, and cash flow trends over the past 3 years.'
+        id: "1",
+        title: "Financial Overview",
+        description: "Review key financial metrics and ratios",
+        prompt:
+          "Analyze the company's key financial metrics including revenue growth, profit margins, and cash flow trends over the past 3 years.",
       },
       {
-        id: '2',
-        title: 'Market Position',
-        description: 'Evaluate competitive position and market share',
-        prompt: 'Assess the company\'s market position, including market share, competitive advantages, and industry dynamics.'
+        id: "2",
+        title: "Market Position",
+        description: "Evaluate competitive position and market share",
+        prompt:
+          "Assess the company's market position, including market share, competitive advantages, and industry dynamics.",
       },
       {
-        id: '3',
-        title: 'Risk Assessment',
-        description: 'Identify key risks and challenges',
-        prompt: 'Identify and analyze key business risks, regulatory challenges, and potential threats to the company\'s business model.'
-      }
-    ]
-  }
-}
+        id: "3",
+        title: "Risk Assessment",
+        description: "Identify key risks and challenges",
+        prompt:
+          "Identify and analyze key business risks, regulatory challenges, and potential threats to the company's business model.",
+      },
+    ],
+  },
+};
 
 interface PlaybookStep {
-  id: string
-  title: string
-  description: string
-  prompt: string
+  id: string;
+  title: string;
+  description: string;
+  prompt: string;
 }
 
 export default function PlaybookPage({ params }: { params: { id: string } }) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [context, setContext] = useState<any>(null)
-  const [playbook, setPlaybook] = useState<any>(null)
-  const [editMode, setEditMode] = useState(false)
-  const [steps, setSteps] = useState<PlaybookStep[]>([])
-  const [editingStep, setEditingStep] = useState<string | null>(null)
-  const [improvingStepId, setImprovingStepId] = useState<string | null>(null)
-  const [isContextCollapsed, setIsContextCollapsed] = useState(false)
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const [context, setContext] = useState<any>(null);
+  const [playbook, setPlaybook] = useState<any>(null);
+  const [editMode, setEditMode] = useState(false);
+  const [steps, setSteps] = useState<PlaybookStep[]>([]);
+  const [editingStep, setEditingStep] = useState<string | null>(null);
+  const [improvingStepId, setImprovingStepId] = useState<string | null>(null);
+  const [isContextCollapsed, setIsContextCollapsed] = useState(false);
 
   useEffect(() => {
-    const contextParam = searchParams.get('context')
+    const contextParam = searchParams.get("context");
     if (contextParam) {
-      setContext(JSON.parse(decodeURIComponent(contextParam)))
+      setContext(JSON.parse(decodeURIComponent(contextParam)));
     }
 
     // Load playbook data
-    if (params.id !== 'new') {
-      const playbookData = MOCK_PLAYBOOKS[params.id as keyof typeof MOCK_PLAYBOOKS]
+    if (params.id !== "new") {
+      const playbookData =
+        MOCK_PLAYBOOKS[params.id as keyof typeof MOCK_PLAYBOOKS];
       if (playbookData) {
-        setPlaybook(playbookData)
-        setSteps(playbookData.steps)
+        setPlaybook(playbookData);
+        setSteps(playbookData.steps);
       }
     } else {
-      setEditMode(true)
+      setEditMode(true);
     }
-  }, [params.id, searchParams])
+  }, [params.id, searchParams]);
 
   const handleAddStep = () => {
     const newStep: PlaybookStep = {
       id: Math.random().toString(36).substr(2, 9),
-      title: 'New Step',
-      description: 'Step description',
-      prompt: 'Research prompt'
-    }
-    setSteps([...steps, newStep])
-    setEditingStep(newStep.id)
-  }
+      title: "New Step",
+      description: "Step description",
+      prompt: "Research prompt",
+    };
+    setSteps([...steps, newStep]);
+    setEditingStep(newStep.id);
+  };
 
   const handleDeleteStep = (stepId: string) => {
-    setSteps(steps.filter(step => step.id !== stepId))
-  }
+    setSteps(steps.filter((step) => step.id !== stepId));
+  };
 
-  const handleStepChange = (stepId: string, field: keyof PlaybookStep, value: string) => {
-    setSteps(steps.map(step => 
-      step.id === stepId ? { ...step, [field]: value } : step
-    ))
-  }
+  const handleStepChange = (
+    stepId: string,
+    field: keyof PlaybookStep,
+    value: string,
+  ) => {
+    setSteps(
+      steps.map((step) =>
+        step.id === stepId ? { ...step, [field]: value } : step,
+      ),
+    );
+  };
 
   const handleSavePlaybook = () => {
     // Here you would typically save to your backend
-    console.log('Saving playbook:', { ...playbook, steps })
-    setEditMode(false)
-  }
+    console.log("Saving playbook:", { ...playbook, steps });
+    setEditMode(false);
+  };
 
   return (
     <div className="min-h-screen bg-background">
       <div className="container mx-auto p-6">
         <BackToStartButton />
-        
+
         <div className="flex items-center justify-between mb-6 mt-12">
           <div>
             <h1 className="text-3xl font-bold">
-              {params.id === 'new' ? 'New Quantly Playbook' : playbook?.name}
+              {params.id === "new" ? "New Quantly Playbook" : playbook?.name}
             </h1>
             {playbook?.description && (
               <p className="text-gray-500 mt-1">{playbook.description}</p>
@@ -132,16 +142,13 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
           </div>
           <div className="flex gap-2">
             {!editMode && (
-              <Button 
-                variant="outline" 
-                onClick={() => setEditMode(true)}
-              >
+              <Button variant="outline" onClick={() => setEditMode(true)}>
                 <Edit2 className="h-4 w-4 mr-2" />
                 Edit Playbook
               </Button>
             )}
             {editMode && (
-              <Button 
+              <Button
                 onClick={handleSavePlaybook}
                 className="bg-gray-900 hover:bg-gray-800"
               >
@@ -161,7 +168,9 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                   <div className="bg-gray-100 p-1.5 rounded-md">
                     <FileText className="h-4 w-4 text-gray-700" />
                   </div>
-                  <h2 className="text-base font-semibold text-gray-900">Research Context</h2>
+                  <h2 className="text-base font-semibold text-gray-900">
+                    Research Context
+                  </h2>
                 </div>
                 <Button
                   variant="ghost"
@@ -176,10 +185,10 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                   )}
                 </Button>
               </div>
-              
+
               <div
                 className={`overflow-hidden transition-all duration-200 ease-in-out ${
-                  isContextCollapsed ? 'max-h-0' : 'max-h-[500px]'
+                  isContextCollapsed ? "max-h-0" : "max-h-[500px]"
                 }`}
               >
                 <div className="grid grid-cols-2 gap-3">
@@ -193,10 +202,10 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
         {/* Playbook Steps */}
         <div className="space-y-4 mb-8">
           {steps.map((step, index) => (
-            <Card 
-              key={step.id} 
+            <Card
+              key={step.id}
               className={`border-gray-200 transition-shadow hover:shadow-md
-                       ${editMode ? 'cursor-move' : ''}`}
+                       ${editMode ? "cursor-move" : ""}`}
             >
               <CardContent className="p-4">
                 <div className="flex items-start gap-4">
@@ -205,7 +214,7 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                       <GripVertical className="h-5 w-5 text-gray-400" />
                     </div>
                   )}
-                  
+
                   <div className="flex-1">
                     <div className="flex items-center gap-3 mb-3">
                       <span className="flex items-center justify-center w-8 h-8 rounded-full bg-gray-100 text-sm font-medium">
@@ -214,7 +223,9 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                       {editingStep === step.id ? (
                         <Input
                           value={step.title}
-                          onChange={(e) => handleStepChange(step.id, 'title', e.target.value)}
+                          onChange={(e) =>
+                            handleStepChange(step.id, "title", e.target.value)
+                          }
                           className="font-medium text-lg"
                           placeholder="Step title"
                         />
@@ -223,7 +234,9 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                       )}
                     </div>
 
-                    <div className="pl-11 space-y-3"> {/* Aligned with step title */}
+                    <div className="pl-11 space-y-3">
+                      {" "}
+                      {/* Aligned with step title */}
                       {editingStep === step.id ? (
                         <div className="space-y-3">
                           <div>
@@ -232,7 +245,13 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                             </label>
                             <Input
                               value={step.description}
-                              onChange={(e) => handleStepChange(step.id, 'description', e.target.value)}
+                              onChange={(e) =>
+                                handleStepChange(
+                                  step.id,
+                                  "description",
+                                  e.target.value,
+                                )
+                              }
                               placeholder="Brief description of this step"
                             />
                           </div>
@@ -253,7 +272,13 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                             </div>
                             <Textarea
                               value={step.prompt}
-                              onChange={(e) => handleStepChange(step.id, 'prompt', e.target.value)}
+                              onChange={(e) =>
+                                handleStepChange(
+                                  step.id,
+                                  "prompt",
+                                  e.target.value,
+                                )
+                              }
                               placeholder="Enter the research prompt for this step"
                               className="h-32"
                             />
@@ -270,10 +295,14 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                         </div>
                       ) : (
                         <div className="space-y-3">
-                          <p className="text-sm text-gray-600">{step.description}</p>
+                          <p className="text-sm text-gray-600">
+                            {step.description}
+                          </p>
                           <div>
                             <div className="flex items-center justify-between mb-2">
-                              <h4 className="text-sm font-medium text-gray-700">Research Prompt</h4>
+                              <h4 className="text-sm font-medium text-gray-700">
+                                Research Prompt
+                              </h4>
                               <Button
                                 variant="ghost"
                                 size="sm"
@@ -342,7 +371,15 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
                        hover:border-gray-700"
               onClick={() => {
                 // Handle starting the playbook
-                router.push(`/chat/new${context ? `?context=${encodeURIComponent(JSON.stringify(context))}` : ''}`)
+                router.push(
+                  `/chat/new${
+                    context
+                      ? `?context=${encodeURIComponent(
+                          JSON.stringify(context),
+                        )}`
+                      : ""
+                  }`,
+                );
               }}
             >
               <PlayCircle className="h-5 w-5" />
@@ -356,15 +393,16 @@ export default function PlaybookPage({ params }: { params: { id: string } }) {
           <PromptImproverModal
             isOpen={!!improvingStepId}
             onClose={() => setImprovingStepId(null)}
-            originalPrompt={steps.find(s => s.id === improvingStepId)?.prompt || ''}
+            originalPrompt={
+              steps.find((s) => s.id === improvingStepId)?.prompt || ""
+            }
             onAccept={(improvedPrompt) => {
-              handleStepChange(improvingStepId, 'prompt', improvedPrompt)
-              setImprovingStepId(null)
+              handleStepChange(improvingStepId, "prompt", improvedPrompt);
+              setImprovingStepId(null);
             }}
           />
         )}
       </div>
     </div>
-  )
+  );
 }
-

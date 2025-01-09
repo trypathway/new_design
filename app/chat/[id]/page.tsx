@@ -24,8 +24,8 @@ import { BackToStartButton } from "@/components/back-to-start-button";
 import { PDFViewer } from "@/components/pdf-viewer";
 import { ErrorBoundary } from "@/components/error-boundary";
 import { LogViewer } from "@/components/log-viewer";
-import { PromptImproverModal } from "@/app/components/prompt-improver-modal";
-import { ContextWindow } from "@/app/components/context-window";
+import { PromptImproverModal } from "@/components/prompt-improver-modal";
+import { ContextWindow } from "@/components/context-window";
 import { toast } from "@/components/ui/use-toast";
 
 // Mock data for existing chats

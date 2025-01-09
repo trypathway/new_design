@@ -2,7 +2,7 @@
 
 import { Card } from "@/components/ui/card";
 import { MessageSquare, BookOpen } from "lucide-react";
-import { Chat } from "@/app/types/chat";
+import { Chat } from "@/types/chat";
 
 interface ChatListProps {
   chats: Chat[];
