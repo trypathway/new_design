@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useChats } from "../hooks/useChats";
+import { useChats } from "../hooks/use-chats";
 import { ChatList } from "../components/chat-list";
 import { ChatFilters } from "../components/chat-filters";
 import { Button } from "@/components/ui/button";
