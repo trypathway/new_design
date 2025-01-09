@@ -1,4 +1,4 @@
-import { useAuthApi } from "./useAuthApi";
+import { useAuthApi } from "./use-auth-api";
 import { Chat, GetChatsParams } from "../types/chat";
 import { ApiResponse } from "../types/api";
 
